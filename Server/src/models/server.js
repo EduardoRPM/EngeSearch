@@ -43,8 +43,22 @@ class Server {
     }
 
     middlewares() {
-        this.app.use(express.json());
         this.app.use(cors(this.corsOptions));
+        this.app.use(express.json());
+
+        // Simple request logger to help debug front-end requests
+        this.app.use((req, res, next) => {
+            try {
+                const now = new Date().toISOString();
+                const params = JSON.stringify(req.params || {});
+                const query = JSON.stringify(req.query || {});
+                const body = JSON.stringify(req.body || {});
+                console.log(`[HTTP] ${now} ${req.method} ${req.originalUrl} params=${params} query=${query} body=${body}`);
+            } catch (err) {
+                console.log('[HTTP] Error logging request', err && err.stack ? err.stack : err);
+            }
+            next();
+        });
     }
 }
 

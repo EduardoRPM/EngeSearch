@@ -3,8 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom, map } from 'rxjs';
 import { Article, ArticleWithId } from '../models/article.model';
 import { deriveArticleId } from '../utils/article-utils';
+import { buildApiUrl } from '../config/api.config';
 
-const DATA_URL = 'data/09_dataset_complete.json';
+const ARTICLES_API_URL = buildApiUrl('/items');
 const SAVED_STORAGE_KEY = 'engenesearch.savedArticles';
 
 @Injectable({ providedIn: 'root' })
@@ -16,13 +17,13 @@ export class ArticleService {
 
   constructor(private readonly http: HttpClient) {}
 
-  private async loadArticles(): Promise<ArticleWithId[]> {
-    if (this.loadingPromise) {
+  private async loadArticles(forceReload = false): Promise<ArticleWithId[]> {
+    if (this.loadingPromise && !forceReload) {
       return this.loadingPromise;
     }
 
     this.loadingPromise = firstValueFrom(
-      this.http.get<Article[]>(DATA_URL).pipe(map((articles) => this.hydrateArticles(articles))),
+      this.http.get<Article[]>(ARTICLES_API_URL).pipe(map((articles) => this.hydrateArticles(articles))),
     );
 
     try {
@@ -37,8 +38,8 @@ export class ArticleService {
 
   private hydrateArticles(articles: Article[]): ArticleWithId[] {
     return articles.map((article, index) => {
-      const id = deriveArticleId(article, index);
-      const saved = this.savedIds.has(id) || article.saved;
+      const id = this.resolveArticleId(article, index);
+      const saved = this.savedIds.has(id) || Boolean(article.saved);
       return {
         ...article,
         id,
@@ -55,8 +56,7 @@ export class ArticleService {
   }
 
   async refreshArticles(): Promise<ArticleWithId[]> {
-    const articles = await this.loadArticles();
-    return articles;
+    return this.loadArticles(true);
   }
 
   getArticlesSnapshot(): ArticleWithId[] {
@@ -137,5 +137,12 @@ export class ArticleService {
     } catch (error) {
       console.error('Failed to persist saved articles', error);
     }
+  }
+
+  private resolveArticleId(article: Article, index: number): string {
+    if (article._id) {
+      return String(article._id);
+    }
+    return deriveArticleId(article, index);
   }
 }

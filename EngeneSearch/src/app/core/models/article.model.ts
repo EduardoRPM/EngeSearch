@@ -13,6 +13,7 @@ export interface FormattedCitations {
 }
 
 export interface Article {
+  _id?: string;
   title: string;
   pmcid?: string;
   pmid?: string;
@@ -24,18 +25,19 @@ export interface Article {
   title_pubmed?: string;
   journal?: string;
   year: string;
-  authors: string[];
-  keywords: string[];
-  mesh_terms: string[];
-  topics: string[];
-  link: string;
-  citations: Citations;
-  formatted_citations: FormattedCitations;
-  saved: boolean;
+  authors?: string[];
+  keywords?: string[];
+  mesh_terms?: string[];
+  topics?: string[];
+  link?: string;
+  citations?: Citations;
+  formatted_citations?: FormattedCitations;
+  saved?: boolean;
 }
 
 export interface ArticleWithId extends Article {
   id: string;
+  saved: boolean;
 }
 
 export interface SearchArticleResult {
