@@ -23,6 +23,7 @@ export class SidebarComponent {
     { href: '/dashboard', label: 'Dashboard', icon: 'home' },
     { href: '/search', label: 'Assisted search', icon: 'search' },
     { href: '/mis-articulos', label: 'My Articles', icon: 'my-articles', roles: ['user', 'admin'] },
+    { href: '/articles', label: 'Articles', icon: 'article', roles: ['admin'] },
     { href: '/usuarios', label: 'Users', icon: 'users', roles: ['admin'] },
     { href: '/saved', label: 'Saved', icon: 'bookmark' },
     { href: '/graph', label: 'Graph', icon: 'graph' },
