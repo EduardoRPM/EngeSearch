@@ -31,7 +31,7 @@ export class SavedComponent {
             comments: article.topics?.length,
             image: '/assets/logoN.png',
             link: article.link ?? undefined,
-            badge: 'Saved',
+            badge: undefined,
           })),
       ),
     );

@@ -27,6 +27,8 @@ export class ArticleCardComponent {
   @Input() viewMode: 'grid' | 'list' = 'grid';
   @Input() isBookmarked = false;
   @Input() disableBookmark = false;
+  @Input() showBookmark = true;
+  @Input() showStats = true;
 
   @Output() bookmarkToggle = new EventEmitter<ArticleCardData>();
   @Output() tagClick = new EventEmitter<string>();

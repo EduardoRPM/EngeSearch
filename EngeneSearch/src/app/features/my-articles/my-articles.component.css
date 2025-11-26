@@ -1,0 +1,31 @@
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.form-card {
+  min-height: 60vh; /* minimum height */
+  max-height: 80vh; /* cap height so it fits on screen */
+  display: flex;
+  flex-direction: column;
+  padding-right: 8px; /* avoid scrollbar overlapping content */
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 20;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.modal-body {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  padding-top: 0.5rem;
+}
+
+.form-card input,
+.form-card textarea {
+  box-sizing: border-box;
+}
