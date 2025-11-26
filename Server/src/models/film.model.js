@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const filmSchema = new mongoose.Schema({
+const itemSchema = new mongoose.Schema({
     title: String,
     image: String,
     description: String,
