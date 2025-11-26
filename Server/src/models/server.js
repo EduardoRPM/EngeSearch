@@ -15,7 +15,7 @@ class Server {
             allowedHeaders: ['Content-Type', 'Authorization']
         };
         this.middlewares();
-        this.filmsPath = "/films";
+        this.itemsPath = "/items";
         this.usersPath = "/users";
 
         this.routes();
@@ -30,7 +30,7 @@ class Server {
     }
 
     routes() {
-        this.app.use(this.filmsPath, require("../routes/films.route"));
+        this.app.use(this.itemsPath, require("../routes/items.route"));
         this.app.use(this.usersPath, require("../routes/users.route"));
 
 
