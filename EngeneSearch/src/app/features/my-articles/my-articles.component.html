@@ -2,7 +2,7 @@
 
 <div class="pb-20">
   <div class="m-6 flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-foreground">Mis artículos</h1>
+    <h1 class="text-2xl font-bold text-foreground">Mis articulos</h1>
 
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-2">
@@ -34,7 +34,7 @@
         class="bg-[#384CBF] text-white px-4 py-2 rounded hover:opacity-90"
         (click)="openForm()"
       >
-        Crear Artículo
+        Crear Articulo
       </button>
     </div>
   </div>
@@ -43,15 +43,38 @@
     <div class="flex items-start justify-between mb-4">
       <div>
         <h2 class="text-lg font-semibold text-foreground flex items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 6.5h7v11H3zM14 6.5h7v11h-7zM10 6.5v11" />
-        </svg>
-          Mis artículos
+          </svg>
+          Mis articulos
         </h2>
-        <p class="text-sm text-muted-foreground mt-1">Aquí puedes crear y organizar tus artículos</p>
+        <p class="text-sm text-muted-foreground mt-1">Aqui puedes crear y organizar tus articulos</p>
       </div>
     </div>
-    <p class="text-sm text-muted-foreground">{{ articlesCount }} artículos</p>
+    <p class="text-sm text-muted-foreground">{{ articlesCount }} articulos</p>
+  </div>
+
+  <div class="mx-6" *ngIf="previewArticles.length === 0">
+    <div class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
+      Aún no has creado articulos. Completa el formulario de ejemplo y pulsa Guardar para ver una vista previa en tarjeta.
+    </div>
+  </div>
+
+  <div
+    *ngIf="previewArticles.length > 0"
+    class="mx-6 gap-6"
+    [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
+  >
+    <div *ngFor="let article of previewArticles; trackBy: trackByArticleId" class="h-full">
+      <app-article-card
+        [article]="article"
+        [viewMode]="viewMode"
+        [isBookmarked]="false"
+        [disableBookmark]="true"
+        [showBookmark]="false"
+        [showStats]="false"
+      ></app-article-card>
+    </div>
   </div>
 
   <!-- Modal Form -->
@@ -60,7 +83,7 @@
 
     <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-1/2 z-10 p-6 form-card">
       <div class="modal-header flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium">Crear Artículo</h3>
+        <h3 class="text-lg font-medium">Crear Articulo</h3>
         <button class="text-gray-500 flex items-center gap-2" (click)="closeForm()" aria-label="Cerrar">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -70,43 +93,59 @@
 
       <form class="space-y-4 modal-body">
         <div>
-          <label class="block text-sm font-medium">Título <span class="text-red-600">*</span></label>
-          <input class="mt-1 block w-full border rounded px-3 py-2" required />
+          <label class="block text-sm font-medium">Titulo <span class="text-red-600">*</span></label>
+          <input class="mt-1 block w-full border rounded px-3 py-2" required [(ngModel)]="formData.title" name="title" />
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium">PMCID</label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" />
+            <input class="mt-1 block w-full border rounded px-3 py-2" [(ngModel)]="formData.pmcid" name="pmcid" />
           </div>
           <div>
             <label class="block text-sm font-medium">PMID</label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" />
+            <input class="mt-1 block w-full border rounded px-3 py-2" [(ngModel)]="formData.pmid" name="pmid" />
           </div>
           <div>
             <label class="block text-sm font-medium">DOI</label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" />
+            <input class="mt-1 block w-full border rounded px-3 py-2" [(ngModel)]="formData.doi" name="doi" />
           </div>
           <div>
-            <label class="block text-sm font-medium">Año</label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" />
+            <label class="block text-sm font-medium">Ano</label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" [(ngModel)]="formData.year" name="year" />
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium">Resumen <span class="text-red-600">*</span></label>
-          <textarea class="mt-1 block w-full border rounded px-3 py-2" rows="4" required></textarea>
+          <textarea
+            class="mt-1 block w-full border rounded px-3 py-2"
+            rows="4"
+            required
+            [(ngModel)]="formData.summary"
+            name="summary"
+          ></textarea>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium">Autores <span class="text-red-600">*</span></label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" required />
+            <input
+              class="mt-1 block w-full border rounded px-3 py-2"
+              required
+              [(ngModel)]="formData.authors"
+              name="authors"
+            />
             <p class="text-xs text-gray-500">Separar autores por comas</p>
           </div>
           <div>
             <label class="block text-sm font-medium">Keywords <span class="text-red-600">*</span></label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" required />
+            <input
+              class="mt-1 block w-full border rounded px-3 py-2"
+              required
+              [(ngModel)]="formData.keywords"
+              name="keywords"
+            />
             <p class="text-xs text-gray-500">Separar por comas</p>
           </div>
         </div>
@@ -114,17 +153,27 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium">Topics <span class="text-red-600">*</span></label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" required />
+            <input
+              class="mt-1 block w-full border rounded px-3 py-2"
+              required
+              [(ngModel)]="formData.topics"
+              name="topics"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium">MeSH terms</label>
-            <input class="mt-1 block w-full border rounded px-3 py-2" />
+            <input class="mt-1 block w-full border rounded px-3 py-2" [(ngModel)]="formData.mesh" name="mesh" />
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium">Link <span class="text-red-600">*</span></label>
-          <input class="mt-1 block w-full border rounded px-3 py-2" required />
+          <input
+            class="mt-1 block w-full border rounded px-3 py-2"
+            required
+            [(ngModel)]="formData.link"
+            name="link"
+          />
         </div>
 
         <div class="flex gap-3 justify-end pt-4">
