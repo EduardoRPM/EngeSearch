@@ -63,22 +63,13 @@
   <div *ngIf="displayedArticles.length === 0" class="mx-6 text-muted-foreground text-sm">
     You do not have saved docs yet
   </div>
-
+ 
   <div
     *ngIf="displayedArticles.length > 0"
     class="mx-6 gap-6"
     [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
   >
-    <div *ngFor="let article of displayedArticles; trackBy: trackByArticleId" class="h-full">
-      <app-article-card
-        [article]="article"
-        [viewMode]="viewMode"
-        [isBookmarked]="true"
-        (bookmarkToggle)="handleBookmarkToggle(article)"
-      ></app-article-card>
-    </div>
-    <!-- Add-more card -->
-    <div class="h-full">
+   <div class="h-full">
       <a
         routerLink="/search"
         class="block w-full h-full bg-card rounded-xl overflow-hidden border border-dashed border-gray-300 flex items-center justify-center hover:shadow-lg transition-colors"
@@ -90,6 +81,16 @@
           <div class="text-xs text-muted-foreground">Get AI suggestions and add more documents</div>
         </div>
       </a>
+  </div>
+    <div *ngFor="let article of displayedArticles; trackBy: trackByArticleId" class="h-full">
+      <app-article-card
+        [article]="article"
+        [viewMode]="viewMode"
+        [isBookmarked]="true"
+        (bookmarkToggle)="handleBookmarkToggle(article)"
+      ></app-article-card>
     </div>
+    <!-- Add-more card -->
+    
   </div>
 </div>
