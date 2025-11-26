@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
+type Role = 'user' | 'admin';
+
 interface MenuItem {
   href: string;
   label: string;
   icon: string;
-  roles?: string[];
+  roles?: Role[];
 }
 
 @Component({
@@ -20,13 +22,14 @@ export class SidebarComponent {
   readonly menuItems: MenuItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: 'home' },
     { href: '/search', label: 'Assisted search', icon: 'search' },
-    { href: '/mis-articulos', label: 'Mis artículos', icon: 'my-articles', roles: ['user'] },
+    { href: '/mis-articulos', label: 'Mis articulos', icon: 'my-articles', roles: ['user', 'admin'] },
+    { href: '/usuarios', label: 'Usuarios', icon: 'users', roles: ['admin'] },
     { href: '/saved', label: 'Saved', icon: 'bookmark' },
     { href: '/graph', label: 'Graph', icon: 'graph' },
   ];
 
   // Placeholder for role-based visibility. Replace with real auth service later.
-  currentRole = 'user';
+  currentRole: Role = 'admin';
 
   get visibleMenuItems(): MenuItem[] {
     return this.menuItems.filter((m) => !m.roles || m.roles.includes(this.currentRole));
