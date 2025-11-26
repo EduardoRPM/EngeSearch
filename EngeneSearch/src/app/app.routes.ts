@@ -5,6 +5,7 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { SearchComponent } from './features/search/search.component';
 import { SavedComponent } from './features/saved/saved.component';
 import { GraphComponent } from './features/graph/graph.component';
+import { MyArticlesComponent } from './features/my-articles/my-articles.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { AdminDashboardComponent } from './features/admin-dashboard/admin-dashboard.component';
@@ -19,6 +20,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'search', component: SearchComponent },
+      { path: 'mis-articulos', component: MyArticlesComponent },
       { path: 'saved', component: SavedComponent },
       { path: 'graph', component: GraphComponent },
       { path: 'admin', component: AdminDashboardComponent },

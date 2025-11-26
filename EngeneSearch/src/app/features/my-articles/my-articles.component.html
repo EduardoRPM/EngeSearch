@@ -1,0 +1,140 @@
+<app-header></app-header>
+
+<div class="pb-20">
+  <div class="m-6 flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-foreground">Mis artículos</h1>
+
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="p-2 rounded-lg transition-colors"
+          [ngClass]="viewMode === 'grid' ? 'bg-[#384CBF] text-white' : 'bg-muted text-muted-foreground hover:bg-muted'"
+          (click)="toggleView('grid')"
+          aria-label="View grid"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="p-2 rounded-lg transition-colors"
+          [ngClass]="viewMode === 'list' ? 'bg-[#384CBF] text-white' : 'bg-muted text-muted-foreground hover:bg-muted'"
+          (click)="toggleView('list')"
+          aria-label="View list"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      <button
+        class="bg-[#384CBF] text-white px-4 py-2 rounded hover:opacity-90"
+        (click)="openForm()"
+      >
+        Crear Artículo
+      </button>
+    </div>
+  </div>
+
+  <div class="p-4 mb-6">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-lg font-semibold text-foreground flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 6.5h7v11H3zM14 6.5h7v11h-7zM10 6.5v11" />
+        </svg>
+          Mis artículos
+        </h2>
+        <p class="text-sm text-muted-foreground mt-1">Aquí puedes crear y organizar tus artículos</p>
+      </div>
+    </div>
+    <p class="text-sm text-muted-foreground">{{ articlesCount }} artículos</p>
+  </div>
+
+  <!-- Modal Form -->
+  <div *ngIf="showForm" class="fixed inset-0 z-50 flex items-start justify-center pt-20">
+    <div class="absolute inset-0 bg-black opacity-40" (click)="closeForm()"></div>
+
+    <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-1/2 z-10 p-6 form-card">
+      <div class="modal-header flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium">Crear Artículo</h3>
+        <button class="text-gray-500 flex items-center gap-2" (click)="closeForm()" aria-label="Cerrar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form class="space-y-4 modal-body">
+        <div>
+          <label class="block text-sm font-medium">Título <span class="text-red-600">*</span></label>
+          <input class="mt-1 block w-full border rounded px-3 py-2" required />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">PMCID</label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">PMID</label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">DOI</label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Año</label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Resumen <span class="text-red-600">*</span></label>
+          <textarea class="mt-1 block w-full border rounded px-3 py-2" rows="4" required></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Autores <span class="text-red-600">*</span></label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" required />
+            <p class="text-xs text-gray-500">Separar autores por comas</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Keywords <span class="text-red-600">*</span></label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" required />
+            <p class="text-xs text-gray-500">Separar por comas</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Topics <span class="text-red-600">*</span></label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" required />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">MeSH terms</label>
+            <input class="mt-1 block w-full border rounded px-3 py-2" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Link <span class="text-red-600">*</span></label>
+          <input class="mt-1 block w-full border rounded px-3 py-2" required />
+        </div>
+
+        <div class="flex gap-3 justify-end pt-4">
+          <button type="button" class="px-4 py-2 border rounded" (click)="closeForm()">Cancelar</button>
+          <button type="button" class="px-4 py-2 bg-gray-200 rounded flex items-center gap-2" (click)="onSave()">
+            Guardar
+          </button>
+          <button type="button" class="px-4 py-2 bg-[#384CBF] text-white rounded" (click)="onSend()">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

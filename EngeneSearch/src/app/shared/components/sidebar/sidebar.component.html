@@ -5,7 +5,7 @@
   </div>
   <nav class="flex-1 p-4">
     <ul class="space-y-2">
-      <li *ngFor="let item of menuItems">
+      <li *ngFor="let item of visibleMenuItems">
         <a
           [routerLink]="item.href"
           routerLinkActive="bg-[#E8E6FF] text-[#3D4676]"
@@ -24,6 +24,9 @@
             </svg>
             <svg *ngSwitchCase="'search'" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m0 0A7.5 7.5 0 1 0 5.64 5.64a7.5 7.5 0 0 0 10.61 10.61Z" />
+            </svg>
+            <svg *ngSwitchCase="'my-articles'" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 6.5h7v11H3zM14 6.5h7v11h-7zM10 6.5v11" />
             </svg>
             <svg *ngSwitchCase="'bookmark'" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 3.75A2.25 2.25 0 0 1 8.25 1.5h7.5A2.25 2.25 0 0 1 18 3.75v18l-6-3-6 3v-18Z" />

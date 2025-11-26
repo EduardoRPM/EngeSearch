@@ -6,6 +6,7 @@ interface MenuItem {
   href: string;
   label: string;
   icon: string;
+  roles?: string[];
 }
 
 @Component({
@@ -19,9 +20,17 @@ export class SidebarComponent {
   readonly menuItems: MenuItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: 'home' },
     { href: '/search', label: 'Assisted search', icon: 'search' },
+    { href: '/mis-articulos', label: 'Mis artículos', icon: 'my-articles', roles: ['user'] },
     { href: '/saved', label: 'Saved', icon: 'bookmark' },
     { href: '/graph', label: 'Graph', icon: 'graph' },
   ];
+
+  // Placeholder for role-based visibility. Replace with real auth service later.
+  currentRole = 'user';
+
+  get visibleMenuItems(): MenuItem[] {
+    return this.menuItems.filter((m) => !m.roles || m.roles.includes(this.currentRole));
+  }
 
   constructor(private readonly router: Router) {}
 
