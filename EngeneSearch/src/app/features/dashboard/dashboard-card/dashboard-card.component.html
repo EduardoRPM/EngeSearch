@@ -118,10 +118,12 @@
               <p class="panel-card__excerpt">{{ current.abstract?.[0] }}</p>
 
               <div class="panel-card__tags">
-                <span *ngFor="let topic of (current.topics | slice:0:4); trackBy: trackByIndex" class="panel-tag">
+                <span *ngFor="let topic of ((current.topics || []) | slice:0:4); trackBy: trackByIndex" class="panel-tag">
                   {{ formatTopic(topic) }}
                 </span>
-                <span *ngIf="current.topics.length > 4" class="panel-tag panel-tag--pill">+{{ current.topics.length - 4 }}</span>
+                <span *ngIf="(current.topics?.length || 0) > 4" class="panel-tag panel-tag--pill">
+                  +{{ (current.topics?.length || 0) - 4 }}
+                </span>
               </div>
 
               <div class="panel-card__footer">
@@ -194,10 +196,12 @@
               </div>
 
               <div class="panel-card__tags panel-card__tags--dense">
-                <span *ngFor="let topic of (current.topics | slice:0:5); trackBy: trackByIndex" class="panel-tag">
+                <span *ngFor="let topic of ((current.topics || []) | slice:0:5); trackBy: trackByIndex" class="panel-tag">
                   {{ formatTopic(topic) }}
                 </span>
-                <span *ngIf="current.topics.length > 5" class="panel-tag panel-tag--pill">+{{ current.topics.length - 5 }}</span>
+                <span *ngIf="(current.topics?.length || 0) > 5" class="panel-tag panel-tag--pill">
+                  +{{ (current.topics?.length || 0) - 5 }}
+                </span>
               </div>
 
               <p class="panel-card__excerpt">{{ current.abstract?.[0] }}</p>
@@ -266,10 +270,12 @@
               </div>
 
               <div class="panel-card__tags">
-                <span *ngFor="let topic of (current.topics | slice:0:4); trackBy: trackByIndex" class="panel-tag">
+                <span *ngFor="let topic of ((current.topics || []) | slice:0:4); trackBy: trackByIndex" class="panel-tag">
                   {{ formatTopic(topic) }}
                 </span>
-                <span *ngIf="current.topics.length > 4" class="panel-tag panel-tag--pill">+{{ current.topics.length - 4 }}</span>
+                <span *ngIf="(current.topics?.length || 0) > 4" class="panel-tag panel-tag--pill">
+                  +{{ (current.topics?.length || 0) - 4 }}
+                </span>
               </div>
 
               <p class="panel-card__excerpt">{{ current.abstract?.[0] }}</p>
