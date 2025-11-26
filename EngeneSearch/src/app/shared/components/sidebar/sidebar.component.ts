@@ -22,11 +22,11 @@ export class SidebarComponent {
   readonly menuItems: MenuItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: 'home' },
     { href: '/search', label: 'Assisted search', icon: 'search' },
-    { href: '/mis-articulos', label: 'Mis articulos', icon: 'my-articles', roles: ['user', 'admin'] },
-    { href: '/perfil-personal', label: 'Perfil personal', icon: 'user-circle', roles: ['user', 'admin'] },
-    { href: '/usuarios', label: 'Usuarios', icon: 'users', roles: ['admin'] },
+    { href: '/mis-articulos', label: 'My Articles', icon: 'my-articles', roles: ['user', 'admin'] },
+    { href: '/usuarios', label: 'Users', icon: 'users', roles: ['admin'] },
     { href: '/saved', label: 'Saved', icon: 'bookmark' },
     { href: '/graph', label: 'Graph', icon: 'graph' },
+    { href: '/perfil-personal', label: 'Profile', icon: 'user-circle', roles: ['user', 'admin'] },
   ];
 
   // Placeholder for role-based visibility. Replace with real auth service later.
