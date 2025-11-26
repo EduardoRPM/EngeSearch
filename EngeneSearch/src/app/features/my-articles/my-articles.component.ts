@@ -16,6 +16,10 @@ export class MyArticlesComponent {
   viewMode: 'grid' | 'list' = 'grid';
   articlesCount = 0;
   previewArticles: ArticleCardData[] = [];
+  showResultModal = false;
+  resultTitle = '';
+  resultMessage = '';
+  resultIsError = false;
   formData = {
     title: '',
     pmcid: '',
@@ -43,16 +47,31 @@ export class MyArticlesComponent {
   }
 
   onSave(): void {
-    const newArticle = this.buildPreviewCard();
-    this.previewArticles = [...this.previewArticles, newArticle];
-    this.updateArticlesCount();
-    this.resetForm();
-    this.closeForm();
+    try {
+      const newArticle = this.buildPreviewCard();
+      this.previewArticles = [...this.previewArticles, newArticle];
+      this.updateArticlesCount();
+      this.resetForm();
+      this.closeForm();
+      this.showSuccess('Articulo guardado', 'El articulo se guardo correctamente.');
+    } catch (error) {
+      console.error('Error al guardar articulo', error);
+      this.showError('No se pudo guardar', 'Intentalo nuevamente mas tarde.');
+    }
   }
 
   onSend(): void {
-    // Placeholder para futura integracion; por ahora actua como guardar
-    this.onSave();
+    try {
+      const newArticle = this.buildPreviewCard();
+      this.previewArticles = [...this.previewArticles, newArticle];
+      this.updateArticlesCount();
+      this.resetForm();
+      this.closeForm();
+      this.showSuccess('Articulo enviado', 'El articulo se envio correctamente.');
+    } catch (error) {
+      console.error('Error al enviar articulo', error);
+      this.showError('No se pudo enviar', 'Intentalo nuevamente mas tarde.');
+    }
   }
 
   trackByArticleId(_index: number, article: ArticleCardData): string {
@@ -104,5 +123,23 @@ export class MyArticlesComponent {
 
   private updateArticlesCount(): void {
     this.articlesCount = this.previewArticles.length;
+  }
+
+  private showSuccess(title: string, message: string): void {
+    this.resultTitle = title;
+    this.resultMessage = message;
+    this.resultIsError = false;
+    this.showResultModal = true;
+  }
+
+  private showError(title: string, message: string): void {
+    this.resultTitle = title;
+    this.resultMessage = message;
+    this.resultIsError = true;
+    this.showResultModal = true;
+  }
+
+  closeResultModal(): void {
+    this.showResultModal = false;
   }
 }

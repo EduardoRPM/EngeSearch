@@ -33,6 +33,10 @@ export class UsersComponent {
   showDeleteModal = false;
   selectedUser: UserCard | null = null;
   newRole: UserCard['role'] = 'user';
+  showResultModal = false;
+  resultTitle = '';
+  resultMessage = '';
+  resultIsError = false;
 
   editRole(user: UserCard): void {
     this.selectedUser = user;
@@ -53,11 +57,31 @@ export class UsersComponent {
 
   confirmRoleChange(): void {
     // Solo visualización: no persiste cambios
+    this.showSuccess('Rol actualizado', 'El rol se actualizo correctamente.');
     this.closeModals();
   }
 
   confirmDelete(): void {
     // Solo visualización: no elimina
+    this.showSuccess('Usuario eliminado', 'El usuario se elimino correctamente (solo vista previa).');
     this.closeModals();
+  }
+
+  private showSuccess(title: string, message: string): void {
+    this.resultTitle = title;
+    this.resultMessage = message;
+    this.resultIsError = false;
+    this.showResultModal = true;
+  }
+
+  private showError(title: string, message: string): void {
+    this.resultTitle = title;
+    this.resultMessage = message;
+    this.resultIsError = true;
+    this.showResultModal = true;
+  }
+
+  closeResultModal(): void {
+    this.showResultModal = false;
   }
 }
