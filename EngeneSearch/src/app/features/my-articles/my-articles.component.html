@@ -177,11 +177,25 @@
         </div>
 
         <div class="flex gap-3 justify-end pt-4">
-          <button type="button" class="px-4 py-2 border rounded" (click)="closeForm()">Cancelar</button>
-          <button type="button" class="px-4 py-2 bg-gray-200 rounded flex items-center gap-2" (click)="onSave()">
+          <button type="button" class="px-4 py-2 border rounded" (click)="closeForm()" [disabled]="isSubmitting">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 bg-gray-200 rounded flex items-center gap-2 disabled:opacity-60"
+            (click)="onSave()"
+            [disabled]="isSubmitting"
+          >
             Guardar
           </button>
-          <button type="button" class="px-4 py-2 bg-[#384CBF] text-white rounded" (click)="onSend()">Enviar</button>
+          <button
+            type="button"
+            class="px-4 py-2 bg-[#384CBF] text-white rounded disabled:opacity-60"
+            (click)="onSend()"
+            [disabled]="isSubmitting"
+          >
+            Enviar
+          </button>
         </div>
       </form>
     </div>

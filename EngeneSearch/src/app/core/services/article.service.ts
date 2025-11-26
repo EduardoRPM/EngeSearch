@@ -1,12 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom, map } from 'rxjs';
-import { Article, ArticleWithId } from '../models/article.model';
+import { Article, ArticleStatus, ArticleWithId } from '../models/article.model';
 import { deriveArticleId } from '../utils/article-utils';
 import { buildApiUrl } from '../config/api.config';
 
 const ARTICLES_API_URL = buildApiUrl('/items');
 const SAVED_STORAGE_KEY = 'engenesearch.savedArticles';
+
+export interface ArticleCreatePayload extends Partial<Omit<Article, '_id' | 'saved'>> {
+  title: string;
+  source: string;
+  year: string;
+}
+
+export type ArticleUpdatePayload = Partial<Omit<Article, '_id' | 'saved'>>;
+
+interface ItemMutationResponse {
+  msg: string;
+  item: Article;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ArticleService {
@@ -115,6 +128,28 @@ export class ArticleService {
     return this.savedIds.has(articleId);
   }
 
+  async createArticle(payload: ArticleCreatePayload): Promise<ArticleWithId> {
+    const response = await firstValueFrom(this.http.post<ItemMutationResponse>(ARTICLES_API_URL, payload));
+    const [created] = this.hydrateArticles([response.item]);
+    this.addArticle(created);
+    this.triggerRefresh();
+    return created;
+  }
+
+  async updateArticle(id: string, changes: ArticleUpdatePayload): Promise<ArticleWithId> {
+    const response = await firstValueFrom(
+      this.http.put<ItemMutationResponse>(`${ARTICLES_API_URL}/${id}`, changes),
+    );
+    const [updated] = this.hydrateArticles([response.item]);
+    this.replaceArticle(updated);
+    this.triggerRefresh();
+    return updated;
+  }
+
+  async updateArticleStatus(id: string, status: ArticleStatus): Promise<ArticleWithId> {
+    return this.updateArticle(id, { status });
+  }
+
   private readSavedIds(): Set<string> {
     try {
       const raw = localStorage.getItem(SAVED_STORAGE_KEY);
@@ -144,5 +179,28 @@ export class ArticleService {
       return String(article._id);
     }
     return deriveArticleId(article, index);
+  }
+
+  private addArticle(article: ArticleWithId): void {
+    const next = [...this.articlesSubject.value, article];
+    this.articlesSubject.next(next);
+  }
+
+  private replaceArticle(article: ArticleWithId): void {
+    const current = this.articlesSubject.value;
+    const idx = current.findIndex((item) => item.id === article.id);
+    if (idx === -1) {
+      this.addArticle(article);
+      return;
+    }
+    const next = [...current];
+    next[idx] = article;
+    this.articlesSubject.next(next);
+  }
+
+  private triggerRefresh(): void {
+    void this.refreshArticles().catch((error) => {
+      console.error('Failed to refresh articles after mutation', error);
+    });
   }
 }

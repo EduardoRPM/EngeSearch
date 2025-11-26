@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ArticleCardComponent, ArticleCardData } from '../../shared/components/article-card/article-card.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
+import { ArticleService, ArticleCreatePayload } from '../../core/services/article.service';
 
 @Component({
   selector: 'app-my-articles',
@@ -16,6 +17,7 @@ export class MyArticlesComponent {
   viewMode: 'grid' | 'list' = 'grid';
   articlesCount = 0;
   previewArticles: ArticleCardData[] = [];
+  isSubmitting = false;
   showResultModal = false;
   resultTitle = '';
   resultMessage = '';
@@ -34,6 +36,8 @@ export class MyArticlesComponent {
     link: '',
   };
 
+  constructor(private readonly articleService: ArticleService) {}
+
   openForm(): void {
     this.showForm = true;
   }
@@ -46,32 +50,12 @@ export class MyArticlesComponent {
     this.showForm = false;
   }
 
-  onSave(): void {
-    try {
-      const newArticle = this.buildPreviewCard();
-      this.previewArticles = [...this.previewArticles, newArticle];
-      this.updateArticlesCount();
-      this.resetForm();
-      this.closeForm();
-      this.showSuccess('Articulo guardado', 'El articulo se guardo correctamente.');
-    } catch (error) {
-      console.error('Error al guardar articulo', error);
-      this.showError('No se pudo guardar', 'Intentalo nuevamente mas tarde.');
-    }
+  async onSave(): Promise<void> {
+    await this.submitArticle('Articulo guardado', 'El articulo se guardo correctamente.');
   }
 
-  onSend(): void {
-    try {
-      const newArticle = this.buildPreviewCard();
-      this.previewArticles = [...this.previewArticles, newArticle];
-      this.updateArticlesCount();
-      this.resetForm();
-      this.closeForm();
-      this.showSuccess('Articulo enviado', 'El articulo se envio correctamente.');
-    } catch (error) {
-      console.error('Error al enviar articulo', error);
-      this.showError('No se pudo enviar', 'Intentalo nuevamente mas tarde.');
-    }
+  async onSend(): Promise<void> {
+    await this.submitArticle('Articulo enviado', 'El articulo se envio correctamente.');
   }
 
   trackByArticleId(_index: number, article: ArticleCardData): string {
@@ -103,6 +87,58 @@ export class MyArticlesComponent {
       .split(',')
       .map((item) => item.trim())
       .filter((item) => item.length > 0);
+  }
+
+  private buildCreatePayload(): ArticleCreatePayload {
+    const keywords = this.splitValues(this.formData.keywords);
+    const topics = this.splitValues(this.formData.topics);
+    const meshTerms = this.splitValues(this.formData.mesh);
+    const authors = this.splitValues(this.formData.authors);
+
+    return {
+      title: this.formData.title.trim(),
+      pmcid: this.formData.pmcid || undefined,
+      pmid: this.formData.pmid || undefined,
+      doi: this.formData.doi || undefined,
+      year: this.formData.year || String(new Date().getFullYear()),
+      source: 'user-submitted',
+      abstract: this.formData.summary ? [this.formData.summary.trim()] : undefined,
+      results: [],
+      conclusions: [],
+      authors,
+      keywords,
+      topics,
+      mesh_terms: meshTerms,
+      link: this.formData.link || undefined,
+      status: 'En revision',
+    };
+  }
+
+  private async submitArticle(successTitle: string, successMessage: string): Promise<void> {
+    if (this.isSubmitting) {
+      return;
+    }
+    if (!this.formData.title.trim() || !this.formData.summary.trim()) {
+      this.showError('Campos incompletos', 'Completa el titulo y el resumen antes de continuar.');
+      return;
+    }
+
+    this.isSubmitting = true;
+    try {
+      const payload = this.buildCreatePayload();
+      await this.articleService.createArticle(payload);
+      const newArticle = this.buildPreviewCard();
+      this.previewArticles = [...this.previewArticles, newArticle];
+      this.updateArticlesCount();
+      this.resetForm();
+      this.closeForm();
+      this.showSuccess(successTitle, `${successMessage} Se envio para revision a traves del servidor.`);
+    } catch (error) {
+      console.error('Error al enviar articulo', error);
+      this.showError('No se pudo completar la accion', 'Intentalo nuevamente mas tarde.');
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 
   private resetForm(): void {

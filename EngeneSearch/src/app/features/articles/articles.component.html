@@ -23,28 +23,36 @@
     </div>
   </div>
 
+  <div *ngIf="statusError" class="text-sm text-red-600">
+    {{ statusError }}
+  </div>
+
   <div *ngIf="filteredArticles.length === 0" class="text-sm text-muted-foreground">
     No hay articulos con el estado {{ currentStatus }}.
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div *ngFor="let article of filteredArticles" class="bg-card border border-border rounded-xl p-4 space-y-3 shadow-sm article-card">
+    <div
+      *ngFor="let article of filteredArticles; trackBy: trackByArticleId"
+      class="bg-card border border-border rounded-xl p-4 space-y-3 shadow-sm article-card"
+    >
       <div class="flex items-start justify-between gap-2">
         <div>
-          <p class="text-xs text-muted-foreground">Autor: {{ article.author }}</p>
-          <h3 class="text-lg font-semibold text-foreground">{{ article.title }}</h3>
+          <p class="text-xs text-muted-foreground">Autor: {{ getArticleAuthor(article) }}</p>
+          <h3 class="text-lg font-semibold text-foreground">{{ getArticleTitle(article) }}</h3>
         </div>
         <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#E8E6FF] text-[#3D4676]">
-          {{ article.status }}
+          {{ getStatusLabel(article) }}
         </span>
       </div>
-      <p class="text-sm text-muted-foreground">{{ article.summary }}</p>
+      <p class="text-sm text-muted-foreground">{{ getArticleSummary(article) }}</p>
 
-      <div *ngIf="article.status === 'En revision'" class="flex items-center gap-2 pt-2 justify-end">
+      <div *ngIf="isPendingReview(article); else noActions" class="flex items-center gap-2 pt-2 justify-end">
         <button
           type="button"
           class="px-3 py-2 rounded-lg border border-red-500 text-red-600 hover:bg-red-50 transition-colors text-sm"
           (click)="openRejectModal(article)"
+          [disabled]="isStatusUpdating(article)"
         >
           Rechazar
         </button>
@@ -52,13 +60,16 @@
           type="button"
           class="px-3 py-2 rounded-lg bg-[#384CBF] text-white hover:bg-[#384CBF]/90 transition-colors text-sm"
           (click)="acceptArticle(article)"
+          [disabled]="isStatusUpdating(article)"
         >
           Aceptar
         </button>
       </div>
-      <div *ngIf="article.status !== 'En revision'" class="text-xs text-muted-foreground">
-        Sin acciones disponibles para este estado.
-      </div>
+      <ng-template #noActions>
+        <div class="text-xs text-muted-foreground">
+          Sin acciones disponibles para este estado.
+        </div>
+      </ng-template>
     </div>
   </div>
 </div>

@@ -5,6 +5,11 @@ const itemSchema = new mongoose.Schema({
   pmcid: String,
   pmid: String,
   doi: String,
+  status: {
+    type: String,
+    enum: ['En revision', 'Aceptado', 'Rechazado'],
+    default: 'En revision'
+  },
 
   results: [String],
   conclusions: [String],
@@ -35,4 +40,3 @@ const itemSchema = new mongoose.Schema({
 
 
 module.exports = mongoose.model('item', itemSchema); 
-

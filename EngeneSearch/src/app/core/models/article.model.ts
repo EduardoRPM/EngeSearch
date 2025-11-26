@@ -12,12 +12,15 @@ export interface FormattedCitations {
   pubmed?: string;
 }
 
+export type ArticleStatus = 'En revision' | 'Aceptado' | 'Rechazado';
+
 export interface Article {
   _id?: string;
   title: string;
   pmcid?: string;
   pmid?: string;
   doi?: string | null;
+  status?: ArticleStatus;
   results?: string[];
   conclusions?: string[];
   abstract?: string[];

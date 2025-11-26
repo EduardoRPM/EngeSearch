@@ -65,6 +65,7 @@ const createItem = async (req = request, res = response) => {
         pmcid,
         pmid,
         doi,
+        status = 'En revision',
         results,
         conclusions,
         abstract,
@@ -108,7 +109,8 @@ const createItem = async (req = request, res = response) => {
             topics,
             link,
             citations,
-            formatted_citations
+            formatted_citations,
+            status
         });
         await newItem.save();
         console.log(`[createItem] created id=${newItem._id}`);
@@ -148,58 +150,49 @@ const deleteItem = async (req = request, res = response) => {
 
 const updateItem = async (req = request, res = response) => {
     const { id } = req.params;
-    const {
-        title,
-        pmcid,
-        pmid,
-        doi,
-        results,
-        conclusions,
-        abstract,
-        source,
-        title_pubmed,
-        journal,
-        year,
-        authors,
-        keywords,
-        mesh_terms,
-        topics,
-        link,
-        citations,
-        formatted_citations
-    } = req.body;
-
     logRequest(req, 'updateItem');
 
-    if (!title) {
+    const allowedFields = [
+        "title",
+        "pmcid",
+        "pmid",
+        "doi",
+        "results",
+        "conclusions",
+        "abstract",
+        "source",
+        "title_pubmed",
+        "journal",
+        "year",
+        "authors",
+        "keywords",
+        "mesh_terms",
+        "topics",
+        "link",
+        "citations",
+        "formatted_citations",
+        "status"
+    ];
+
+    const payload = req.body || {};
+    const updateFields = {};
+
+    allowedFields.forEach((field) => {
+        if (typeof payload[field] !== "undefined") {
+            updateFields[field] = payload[field];
+        }
+    });
+
+    if (Object.keys(updateFields).length === 0) {
         return res.status(400).json({
-            msg: "Title is required"
+            msg: "Provide at least one field to update"
         });
     }
 
     try {
         const updatedItem = await item.findByIdAndUpdate(
             id,
-            {
-                title,
-                pmcid,
-                pmid,
-                doi,
-                results,
-                conclusions,
-                abstract,
-                source,
-                title_pubmed,
-                journal,
-                year,
-                authors,
-                keywords,
-                mesh_terms,
-                topics,
-                link,
-                citations,
-                formatted_citations
-            },
+            updateFields,
             { new: true, runValidators: true }
         );
 
