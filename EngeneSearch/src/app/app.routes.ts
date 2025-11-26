@@ -10,6 +10,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { AdminDashboardComponent } from './features/admin-dashboard/admin-dashboard.component';
 import { UsersComponent } from './features/users/users.component';
+import { ProfileComponent } from './features/profile/profile.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -22,6 +23,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'search', component: SearchComponent },
       { path: 'mis-articulos', component: MyArticlesComponent },
+      { path: 'perfil-personal', component: ProfileComponent },
       { path: 'usuarios', component: UsersComponent },
       { path: 'saved', component: SavedComponent },
       { path: 'graph', component: GraphComponent },

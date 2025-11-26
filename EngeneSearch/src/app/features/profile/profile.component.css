@@ -1,0 +1,7 @@
+.info-card {
+  transition: box-shadow 150ms ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}

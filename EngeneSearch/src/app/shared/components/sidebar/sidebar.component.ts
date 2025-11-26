@@ -23,6 +23,7 @@ export class SidebarComponent {
     { href: '/dashboard', label: 'Dashboard', icon: 'home' },
     { href: '/search', label: 'Assisted search', icon: 'search' },
     { href: '/mis-articulos', label: 'Mis articulos', icon: 'my-articles', roles: ['user', 'admin'] },
+    { href: '/perfil-personal', label: 'Perfil personal', icon: 'user-circle', roles: ['user', 'admin'] },
     { href: '/usuarios', label: 'Usuarios', icon: 'users', roles: ['admin'] },
     { href: '/saved', label: 'Saved', icon: 'bookmark' },
     { href: '/graph', label: 'Graph', icon: 'graph' },
@@ -36,6 +37,10 @@ export class SidebarComponent {
   }
 
   constructor(private readonly router: Router) {}
+
+  logout(): void {
+    void this.router.navigate(['/']);
+  }
 
   isActive(path: string): boolean {
     return this.router.isActive(path, {
