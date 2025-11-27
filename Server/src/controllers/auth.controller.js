@@ -1,4 +1,4 @@
-const {response, request} = require("express");
+const { response, request } = require("express");
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -27,28 +27,21 @@ const login = async (req = request, res = response) => {
                 msg: "Usuario / Password no son correctos - password"
             });
         }
-        
-        const token = jwt.sign({
-                username: user.username,
-                role: user.role,
-            }, process.env.secret_key, { 
-                expiresIn: "2h" 
-            }, (err, token) => {
-                if (err) {
-                    console.log(err);
-                    return res.status(500).json({
-                        msg: "Error generando el token"
-                    });
-                }
-                return res.status(200).json({
-                    msg: "Login exitoso",
-                    token
-                });
-            }
-        );
+        const payload = {
+            username: user.username,
+            role: user.rol,
+        };
 
+        const token = jwt.sign(payload, process.env.secret_key, {
+            expiresIn: "2h"
+        });
 
-        // Verificar contraseña 
+        return res.status(200).json({
+            msg: "Login exitoso",
+            token,
+            role: user.rol,
+            username: user.username
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -60,7 +53,7 @@ const login = async (req = request, res = response) => {
 
 };
 const register = async (req = request, res = response) => {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
     
     if (!username || !password) {
         return res.status(400).json({
@@ -77,28 +70,25 @@ const register = async (req = request, res = response) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = new User({ 
-            username, 
-            password: hashedPassword, 
-            rol: 'user' 
+        const newUser = new User({
+            username,
+            password: hashedPassword,
+            rol: role === 'admin' ? 'admin' : 'user'
         });
 
-        await newUser.save();   
-        res.status(200).json({
-            msg: "Usuario creado exitosamente"
+        await newUser.save();
+        return res.status(201).json({
+            msg: "Usuario creado exitosamente",
+            role: newUser.rol
         });
 
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            msg: "Error interno del servidors"
+            msg: "Error interno del servidor"
         });
     }
-    res.status(201).json({
-        msg: "Registro"
-    });
-
-}; 
+};
 
 module.exports = {
     login,

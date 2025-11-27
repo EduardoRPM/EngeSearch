@@ -1,33 +1,51 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { buildApiUrl } from '../config/api.config';
+
+export type AppRole = 'admin' | 'user';
 
 const LOGIN_URL = buildApiUrl('/auth/login');
 const REGISTER_URL = buildApiUrl('/auth/register');
-const AUTH_TOKEN_STORAGE_KEY = 'engenesearch.authToken';
+const AUTH_STORAGE_KEY = 'engenesearch.authState';
 
 interface LoginResponse {
   msg: string;
   token: string;
+  role: AppRole;
+  username: string;
 }
 
 interface RegisterResponse {
   msg: string;
+  role?: AppRole;
+}
+
+interface AuthState {
+  token: string;
+  role: AppRole;
+  username: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly authStateSubject = new BehaviorSubject<AuthState | null>(this.readStoredState());
+  readonly currentUser$ = this.authStateSubject.asObservable();
+
   constructor(private readonly http: HttpClient) {}
 
   async login(username: string, password: string): Promise<void> {
     const trimmedUsername = username.trim();
     const payload = { username: trimmedUsername, password };
     const response = await firstValueFrom(this.http.post<LoginResponse>(LOGIN_URL, payload));
-    if (!response?.token) {
-      throw new Error('Respuesta inválida del servidor: falta el token.');
+    if (!response?.token || !response?.role) {
+      throw new Error('Respuesta inválida del servidor: falta información de autenticación.');
     }
-    this.persistToken(response.token);
+    this.saveState({
+      token: response.token,
+      role: response.role,
+      username: response.username ?? trimmedUsername,
+    });
   }
 
   async register(username: string, password: string): Promise<void> {
@@ -37,14 +55,55 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    this.saveState(null);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+    return this.authStateSubject.value?.token ?? null;
   }
 
-  private persistToken(token: string): void {
-    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+  getRole(): AppRole | null {
+    return this.authStateSubject.value?.role ?? null;
+  }
+
+  isAuthenticated(): boolean {
+    return Boolean(this.authStateSubject.value?.token);
+  }
+
+  hasAnyRole(roles: AppRole[]): boolean {
+    const role = this.getRole();
+    if (!role) {
+      return false;
+    }
+    return roles.includes(role);
+  }
+
+  private saveState(state: AuthState | null): void {
+    if (state) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state));
+    } else {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+    this.authStateSubject.next(state);
+  }
+
+  private readStoredState(): AuthState | null {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (!raw) {
+        return null;
+      }
+      const parsed = JSON.parse(raw) as Partial<AuthState>;
+      if (parsed && parsed.token && parsed.role && parsed.username) {
+        return {
+          token: parsed.token,
+          role: parsed.role,
+          username: parsed.username,
+        };
+      }
+    } catch (error) {
+      console.error('No se pudo leer el estado de autenticación almacenado', error);
+    }
+    return null;
   }
 }

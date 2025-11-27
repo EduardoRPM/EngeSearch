@@ -12,6 +12,7 @@ import { AdminDashboardComponent } from './features/admin-dashboard/admin-dashbo
 import { UsersComponent } from './features/users/users.component';
 import { ProfileComponent } from './features/profile/profile.component';
 import { ArticlesComponent } from './features/articles/articles.component';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -21,15 +22,15 @@ export const routes: Routes = [
     path: '',
     component: MainLayoutComponent,
     children: [
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'search', component: SearchComponent },
-      { path: 'mis-articulos', component: MyArticlesComponent },
-      { path: 'articles', component: ArticlesComponent },
-      { path: 'usuarios', component: UsersComponent },
-      { path: 'saved', component: SavedComponent },
-      { path: 'graph', component: GraphComponent },
-      { path: 'perfil-personal', component: ProfileComponent },
-      { path: 'admin', component: AdminDashboardComponent },
+      { path: 'dashboard', component: DashboardComponent, canActivate: [roleGuard], data: { roles: ['admin', 'user'] } },
+      { path: 'search', component: SearchComponent, canActivate: [roleGuard], data: { roles: ['user'] } },
+      { path: 'mis-articulos', component: MyArticlesComponent, canActivate: [roleGuard], data: { roles: ['user'] } },
+      { path: 'articles', component: ArticlesComponent, canActivate: [roleGuard], data: { roles: ['admin'] } },
+      { path: 'usuarios', component: UsersComponent, canActivate: [roleGuard], data: { roles: ['admin'] } },
+      { path: 'saved', component: SavedComponent, canActivate: [roleGuard], data: { roles: ['user'] } },
+      { path: 'graph', component: GraphComponent, canActivate: [roleGuard], data: { roles: ['user'] } },
+      { path: 'perfil-personal', component: ProfileComponent, canActivate: [roleGuard], data: { roles: ['admin', 'user'] } },
+      { path: 'admin', component: AdminDashboardComponent, canActivate: [roleGuard], data: { roles: ['admin'] } },
     ],
   },
   { path: '**', redirectTo: '' },
