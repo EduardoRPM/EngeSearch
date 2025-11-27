@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { ArticleService } from '../../../core/services/article.service';
 
 @Component({
   selector: 'app-login',
@@ -21,7 +22,11 @@ export class LoginComponent {
   isSubmitting = false;
   error: string | null = null;
 
-  constructor(private readonly router: Router, private readonly authService: AuthService) {}
+  constructor(
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly articleService: ArticleService,
+  ) {}
 
   async handleSubmit(): Promise<void> {
     if (this.isSubmitting) {
@@ -38,6 +43,11 @@ export class LoginComponent {
 
     try {
       await this.authService.login(this.credentials.username, this.credentials.password);
+      try {
+        await this.articleService.refreshArticles();
+      } catch (refreshError) {
+        console.warn('No se pudieron precargar los articulos despues de login', refreshError);
+      }
       await this.router.navigate(['/dashboard']);
     } catch (err) {
       this.error = this.resolveErrorMessage(err, 'Ocurrió un problema al iniciar sesión. Intenta nuevamente.');
