@@ -37,6 +37,11 @@ const itemSchema = new mongoose.Schema({
     default: {}
   },
 
+  feedback: {
+    type: String,
+    default: ''
+  },
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

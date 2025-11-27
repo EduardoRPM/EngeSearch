@@ -88,7 +88,8 @@ const createItem = async (req = request, res = response) => {
         topics,
         link,
         citations,
-        formatted_citations
+        formatted_citations,
+        feedback
     } = req.body;
 
     logRequest(req, 'createItem');
@@ -120,6 +121,7 @@ const createItem = async (req = request, res = response) => {
             citations,
             formatted_citations,
             status,
+            feedback,
             createdBy: req.user?.id || null
         });
         await newItem.save();
@@ -181,7 +183,8 @@ const updateItem = async (req = request, res = response) => {
         "link",
         "citations",
         "formatted_citations",
-        "status"
+        "status",
+        "feedback"
     ];
 
     const payload = req.body || {};

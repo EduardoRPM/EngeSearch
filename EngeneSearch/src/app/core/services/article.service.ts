@@ -149,8 +149,12 @@ export class ArticleService {
     return updated;
   }
 
-  async updateArticleStatus(id: string, status: ArticleStatus): Promise<ArticleWithId> {
-    return this.updateArticle(id, { status });
+  async updateArticleStatus(id: string, status: ArticleStatus, feedback?: string): Promise<ArticleWithId> {
+    const payload: ArticleUpdatePayload = { status };
+    if (typeof feedback === 'string') {
+      payload.feedback = feedback;
+    }
+    return this.updateArticle(id, payload);
   }
 
   private resolveArticleId(article: Article, index: number): string {

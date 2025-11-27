@@ -37,6 +37,7 @@ export interface Article {
   formatted_citations?: FormattedCitations;
   saved?: boolean;
   createdBy?: string;
+  feedback?: string;
 }
 
 export interface ArticleWithId extends Article {

@@ -70,7 +70,7 @@ export class ArticlesComponent implements OnInit {
       return;
     }
     try {
-      await this.changeStatus(this.selectedArticle, 'Rechazado');
+      await this.changeStatus(this.selectedArticle, 'Rechazado', this.rejectFeedback);
       this.closeRejectModal();
     } catch {
       this.rejectError = 'No se pudo rechazar el articulo. Intenta nuevamente.';
@@ -119,7 +119,7 @@ export class ArticlesComponent implements OnInit {
     return 'En revision';
   }
 
-  private async changeStatus(article: ArticleWithId, status: ArticleStatus): Promise<void> {
+  private async changeStatus(article: ArticleWithId, status: ArticleStatus, feedback?: string): Promise<void> {
     if (this.pendingStatusUpdates.has(article.id)) {
       return;
     }
@@ -127,7 +127,7 @@ export class ArticlesComponent implements OnInit {
     const previousStatus = this.normalizeStatus(article);
     this.pendingStatusUpdates.add(article.id);
     try {
-      const updated = await this.articleService.updateArticleStatus(article.id, status);
+      const updated = await this.articleService.updateArticleStatus(article.id, status, feedback);
       this.handleArticleStatusChange(updated, previousStatus);
     } catch (error) {
       console.error('Failed to update article status', error);
