@@ -50,7 +50,7 @@ export class SavedArticlesComponent implements OnChanges {
     this.error = null;
 
     try {
-      this.articleService.setSavedState(article.id, false);
+      await this.articleService.setSavedState(article.id, false);
       this.displayedArticles = this.displayedArticles.filter((item) => item.id !== article.id);
     } catch (error) {
       console.error('Error removing saved article', error);

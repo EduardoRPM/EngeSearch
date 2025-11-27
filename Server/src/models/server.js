@@ -20,6 +20,7 @@ class Server {
         this.itemsPath = "/items";
         this.usersPath = "/users";
         this.authPath = "/auth";
+        this.userSavedArticlesPath = "/user-saved-articles";
         
         this.routes();
         connectDB();
@@ -36,6 +37,7 @@ class Server {
         this.app.use(this.itemsPath, require("../routes/items.route"));
         this.app.use(this.usersPath, require("../routes/users.route"));
         this.app.use(this.authPath, require("../routes/auth.route"));
+        this.app.use(this.userSavedArticlesPath, require("../routes/userSavedArticles.route"));
 
   
         this.app.get(/.*/, function (req, res) {

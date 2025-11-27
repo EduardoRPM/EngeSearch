@@ -146,7 +146,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.favoriteError = null;
 
     try {
-      this.articleService.setSavedState(article.id, desiredSaved);
+      await this.articleService.setSavedState(article.id, desiredSaved);
       if (desiredSaved) {
         this.favorites.set(article.id, article);
       } else {
