@@ -30,7 +30,6 @@ export class SidebarComponent {
     { href: '/saved', label: 'Saved', icon: 'bookmark', roles: ['user'] },
     { href: '/graph', label: 'Graph', icon: 'graph', roles: ['user'] },
     { href: '/perfil-personal', label: 'Profile', icon: 'user-circle', roles: ['user', 'admin'] },
-    { href: '/admin', label: 'Admin', icon: 'shield', roles: ['admin'] },
   ];
 
   currentRole: Role | null = null;

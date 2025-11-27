@@ -1,3 +1,13 @@
 <div class="dash_back text-xl bg-right-bottom bg-[length:300px_300px] p-8 min-h-full">
-  <app-dashboard-card></app-dashboard-card>
+  <ng-container *ngIf="cardCopy$ | async as cardCopy">
+    <app-dashboard-card
+      [welcomeMessage]="cardCopy.welcomeMessage"
+      [heroEyebrow]="cardCopy.heroEyebrow"
+      [heroTitle]="cardCopy.heroTitle"
+      [heroSubtitle]="cardCopy.heroSubtitle"
+      [primaryActionLabel]="cardCopy.primaryActionLabel"
+      [topicActionLabel]="cardCopy.topicActionLabel"
+      [recentActionLabel]="cardCopy.recentActionLabel"
+    ></app-dashboard-card>
+  </ng-container>
 </div>
