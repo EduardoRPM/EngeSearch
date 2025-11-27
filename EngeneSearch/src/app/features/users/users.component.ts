@@ -43,7 +43,8 @@ export class UsersComponent implements OnInit {
       this.users = raw.map((u, idx) => ({
         id: u._id ?? `u-${idx + 1}`,
         username: u.username ?? 'sin-usuario',
-        password: u.password ?? 'sin-contrasena',
+        // Always mask password on the UI
+        password: '********',
         role: this.mapRole(u.rol),
       }));
     } catch (err) {
