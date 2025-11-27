@@ -299,6 +299,7 @@ export class MyArticlesComponent implements OnDestroy {
       likes: article.citations?.citation_count ?? 0,
       comments: article.topics?.length ?? 0,
       image: '/assets/logoN.png',
+      feedback: article.feedback,
     };
   }
 }
