@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ArticleCardComponent, ArticleCardData } from '../../shared/components/article-card/article-card.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { ArticleService, ArticleCreatePayload } from '../../core/services/article.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ArticleWithId } from '../../core/models/article.model';
 import { buildDescription, formatAuthor } from '../../core/utils/article-utils';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-my-articles',
@@ -19,14 +19,26 @@ import { Subscription } from 'rxjs';
 export class MyArticlesComponent implements OnDestroy {
   showForm = false;
   viewMode: 'grid' | 'list' = 'grid';
+  // 'edicion' shows articles in editing, 'revision' shows articles in revision, 'evaluados' shows accepted/rejected created by user
+  selectedSection: 'edicion' | 'revision' | 'evaluados' = 'edicion';
+  // statuses for the UI chip design (key/label)
+  statuses: Array<{ key: 'edicion' | 'revision' | 'evaluados'; label: string }> = [
+    { key: 'edicion', label: 'Articulos en edicion' },
+    { key: 'revision', label: 'Articulos en revision' },
+    { key: 'evaluados', label: 'Artículos Evaluados' },
+  ];
+  currentStatusKey: 'edicion' | 'revision' | 'evaluados' = 'edicion';
   articlesCount = 0;
-  previewArticles: ArticleCardData[] = [];
-  userArticles: ArticleCardData[] = [];
   isSubmitting = false;
   showResultModal = false;
   resultTitle = '';
   resultMessage = '';
   resultIsError = false;
+  isEditingExisting = false;
+  private editingArticleId: string | null = null;
+  private readonly subscriptions: Subscription[] = [];
+  private userArticles: ArticleWithId[] = [];
+
   formData = {
     title: '',
     pmcid: '',
@@ -40,8 +52,6 @@ export class MyArticlesComponent implements OnDestroy {
     mesh: '',
     link: '',
   };
-
-  private readonly subscriptions: Subscription[] = [];
 
   constructor(
     private readonly articleService: ArticleService,
@@ -57,6 +67,14 @@ export class MyArticlesComponent implements OnDestroy {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
+  get editingArticles(): ArticleCardData[] {
+    return this.filterArticlesByState('enEdicion');
+  }
+
+  get revisionArticles(): ArticleCardData[] {
+    return this.filterArticlesByState('enRevision');
+  }
+
   openForm(): void {
     this.showForm = true;
   }
@@ -65,43 +83,85 @@ export class MyArticlesComponent implements OnDestroy {
     this.viewMode = mode;
   }
 
+  selectSection(section: 'edicion' | 'revision' | 'evaluados'): void {
+    this.selectedSection = section;
+  }
+
+  setStatusFilter(key: 'edicion' | 'revision' | 'evaluados'): void {
+    this.currentStatusKey = key;
+    this.selectSection(key);
+  }
+
+  /**
+   * Articles that were evaluated (accepted or rejected) and were created by the current user
+   */
+  get evaluatedArticles(): ArticleCardData[] {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      return [];
+    }
+    return this.userArticles
+      .filter((article) => article.createdBy === userId && ['aceptado', 'rechazado'].includes((article.estadoItem ?? '').toLowerCase()))
+      .map((article) => this.mapServerArticle(article));
+  }
+
+  statusCount(key: 'edicion' | 'revision' | 'evaluados'): number {
+    if (key === 'edicion') return this.editingArticles.length;
+    if (key === 'revision') return this.revisionArticles.length;
+    return this.evaluatedArticles.length;
+  }
+
   closeForm(): void {
     this.showForm = false;
+    this.isEditingExisting = false;
+    this.editingArticleId = null;
+    this.resetForm();
   }
 
   async onSave(): Promise<void> {
-    await this.submitArticle('Articulo guardado', 'El articulo se guardo correctamente.', 'enEdicion');
+    const title = this.isEditingExisting ? 'Articulo actualizado' : 'Articulo guardado';
+    const message = this.isEditingExisting
+      ? 'Los cambios se guardaron correctamente.'
+      : 'El articulo se guardo correctamente.';
+    await this.submitArticle(title, message, 'enEdicion');
   }
 
   async onSend(): Promise<void> {
-    await this.submitArticle('Articulo enviado', 'El articulo se envio correctamente.', 'enRevision');
-  }
-
-  get displayedArticles(): ArticleCardData[] {
-    return [...this.userArticles, ...this.previewArticles];
+    const title = this.isEditingExisting ? 'Articulo enviado' : 'Articulo enviado';
+    const message = this.isEditingExisting
+      ? 'El articulo se envio para revision.'
+      : 'El articulo se envio correctamente.';
+    await this.submitArticle(title, message, 'enRevision');
   }
 
   trackByArticleId(_index: number, article: ArticleCardData): string {
     return article.id;
   }
 
-  private buildPreviewCard(): ArticleCardData {
-    const keywords = this.splitValues(this.formData.keywords);
-    const topics = this.splitValues(this.formData.topics);
-    const tags = [...keywords, ...topics].slice(0, 6);
+  startEdit(articleId: string): void {
+    const article = this.userArticles.find((item) => item.id === articleId && (item.estadoItem ?? 'enRevision') === 'enEdicion');
+    if (!article) {
+      return;
+    }
+    this.populateFormFromArticle(article);
+    this.isEditingExisting = true;
+    this.editingArticleId = articleId;
+    this.showForm = true;
+  }
 
-    return {
-      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      title: this.formData.title || 'Borrador sin titulo',
-      year: this.formData.year || undefined,
-      author: this.formData.authors.split(',')[0]?.trim() || undefined,
-      description: this.formData.summary,
-      tags,
-      link: this.formData.link || null,
-      badge: this.formData.pmcid || this.formData.doi || this.formData.pmid || undefined,
-      likes: 0,
-      comments: 0,
-      image: '/assets/logoN.png',
+  private populateFormFromArticle(article: ArticleWithId): void {
+    this.formData = {
+      title: article.title ?? '',
+      pmcid: article.pmcid ?? '',
+      pmid: article.pmid ?? '',
+      doi: article.doi ?? '',
+      year: article.year ?? '',
+      summary: (article.abstract && article.abstract[0]) || '',
+      authors: (article.authors ?? []).join(', '),
+      keywords: (article.keywords ?? []).join(', '),
+      topics: (article.topics ?? []).join(', '),
+      mesh: (article.mesh_terms ?? []).join(', '),
+      link: article.link ?? '',
     };
   }
 
@@ -112,15 +172,13 @@ export class MyArticlesComponent implements OnDestroy {
       .filter((item) => item.length > 0);
   }
 
-  private buildCreatePayload(estadoItem: string): ArticleCreatePayload {
+  private buildMutationPayload(estadoItem: string, includeCreatedBy: boolean): ArticleCreatePayload {
     const keywords = this.splitValues(this.formData.keywords);
     const topics = this.splitValues(this.formData.topics);
     const meshTerms = this.splitValues(this.formData.mesh);
     const authors = this.splitValues(this.formData.authors);
 
-    const createdBy = this.authService.getUserId() || undefined;
-
-    return {
+    const payload: ArticleCreatePayload = {
       title: this.formData.title.trim(),
       pmcid: this.formData.pmcid || undefined,
       pmid: this.formData.pmid || undefined,
@@ -137,8 +195,14 @@ export class MyArticlesComponent implements OnDestroy {
       link: this.formData.link || undefined,
       status: 'En revision',
       estadoItem,
-      createdBy,
     };
+
+    const createdBy = this.authService.getUserId();
+    if (includeCreatedBy && createdBy) {
+      payload.createdBy = createdBy;
+    }
+
+    return payload;
   }
 
   private async submitArticle(successTitle: string, successMessage: string, estadoItem: string): Promise<void> {
@@ -152,16 +216,16 @@ export class MyArticlesComponent implements OnDestroy {
 
     this.isSubmitting = true;
     try {
-      const payload = this.buildCreatePayload(estadoItem);
-      await this.articleService.createArticle(payload);
-      const newArticle = this.buildPreviewCard();
-      this.previewArticles = [...this.previewArticles, newArticle];
-      this.updateArticlesCount();
-      this.resetForm();
+      const payload = this.buildMutationPayload(estadoItem, !this.isEditingExisting);
+      if (this.isEditingExisting && this.editingArticleId) {
+        await this.articleService.updateArticle(this.editingArticleId, payload);
+      } else {
+        await this.articleService.createArticle(payload);
+      }
       this.closeForm();
-      this.showSuccess(successTitle, `${successMessage} Se envio para revision a traves del servidor.`);
+      this.showSuccess(successTitle, `${successMessage} Se sincronizo con el servidor.`);
     } catch (error) {
-      console.error('Error al enviar articulo', error);
+      console.error('Error al guardar articulo', error);
       this.showError('No se pudo completar la accion', 'Intentalo nuevamente mas tarde.');
     } finally {
       this.isSubmitting = false;
@@ -185,7 +249,7 @@ export class MyArticlesComponent implements OnDestroy {
   }
 
   private updateArticlesCount(): void {
-    this.articlesCount = this.displayedArticles.length;
+    this.articlesCount = this.userArticles.length;
   }
 
   private showSuccess(title: string, message: string): void {
@@ -213,10 +277,14 @@ export class MyArticlesComponent implements OnDestroy {
       this.updateArticlesCount();
       return;
     }
-    this.userArticles = articles
-      .filter((article) => article.createdBy === userId)
-      .map((article) => this.mapServerArticle(article));
+    this.userArticles = articles.filter((article) => article.createdBy === userId);
     this.updateArticlesCount();
+  }
+
+  private filterArticlesByState(target: string): ArticleCardData[] {
+    return this.userArticles
+      .filter((article) => (article.estadoItem ?? 'enRevision') === target)
+      .map((article) => this.mapServerArticle(article));
   }
 
   private mapServerArticle(article: ArticleWithId): ArticleCardData {
