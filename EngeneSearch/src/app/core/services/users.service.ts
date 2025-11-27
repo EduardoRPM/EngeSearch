@@ -20,6 +20,10 @@ interface RawUserResponse {
   result: RawUser;
 }
 
+interface RawMessageResponse {
+  msg: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private readonly base = buildApiUrl('/users');
@@ -34,5 +38,9 @@ export class UsersService {
     return firstValueFrom(
       this.http.put<RawUserResponse>(`${this.base}/${userId}/role`, { rol })
     );
+  }
+
+  async delete(userId: string): Promise<RawMessageResponse> {
+    return firstValueFrom(this.http.delete<RawMessageResponse>(`${this.base}/${userId}`));
   }
 }

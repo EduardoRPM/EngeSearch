@@ -106,9 +106,32 @@ const updateUserRole = async (req, res) => {
   }
 };
 
+// Elimina un usuario por id
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleted = await User.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({
+        msg: 'Usuario no encontrado',
+      });
+    }
+    return res.status(200).json({
+      msg: 'Usuario eliminado correctamente',
+      result: { _id: deleted._id, username: deleted.username },
+    });
+  } catch (error) {
+    console.error('[users.controller] Error al eliminar usuario', error);
+    return res.status(500).json({
+      msg: 'Error al eliminar el usuario',
+    });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
   updateUserRole,
   getProfile,
+  deleteUser,
 };

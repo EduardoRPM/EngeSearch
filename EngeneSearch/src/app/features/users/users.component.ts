@@ -95,9 +95,24 @@ export class UsersComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    // Solo visualizacion: no elimina
-    this.showSuccess('Usuario eliminado', 'El usuario se elimino correctamente (solo vista previa).');
-    this.closeModals();
+    void this.deleteSelectedUser();
+  }
+
+  private async deleteSelectedUser(): Promise<void> {
+    if (!this.selectedUser) {
+      return;
+    }
+    const idToDelete = this.selectedUser.id;
+    try {
+      await this.usersService.delete(idToDelete);
+      this.users = this.users.filter((u) => u.id !== idToDelete);
+      this.showSuccess('Usuario eliminado', 'El usuario se elimino correctamente.');
+    } catch (err) {
+      console.error('Error deleting user', err);
+      this.showError('Error', 'No se pudo eliminar el usuario. Intenta nuevamente.');
+    } finally {
+      this.closeModals();
+    }
   }
 
   private showSuccess(title: string, message: string): void {
