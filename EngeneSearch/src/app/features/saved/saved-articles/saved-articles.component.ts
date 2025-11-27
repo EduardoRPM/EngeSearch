@@ -64,6 +64,11 @@ export class SavedArticlesComponent implements OnChanges {
     void this.router.navigate(['/graph']);
   }
 
+  goToAssistedSearch(): void {
+    // navigate to search page and request assistant focus
+    void this.router.navigate(['/search'], { queryParams: { assist: '1' } });
+  }
+
   trackByArticleId(_index: number, article: SavedArticleCard): string {
     return article.id;
   }
