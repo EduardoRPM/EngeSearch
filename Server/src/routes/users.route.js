@@ -7,6 +7,9 @@ const router = Router();
 // Lista todos los usuarios
 router.get("/", getAllUsers);
 
+// Perfil del usuario autenticado (debe ir antes de la ruta paramétrica)
+router.get("/me", [verifyJWT], getProfile);
+
 // Detalle de un usuario
 router.get("/:id", getUserById);
 
@@ -15,8 +18,5 @@ router.put("/:id/role", updateUserRole);
 
 // Eliminar usuario
 router.delete("/:id", deleteUser);
-
-// Perfil del usuario autenticado
-router.get("/me", [verifyJWT], getProfile);
 
 module.exports = router;
