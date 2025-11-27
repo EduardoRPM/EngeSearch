@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -22,7 +24,7 @@ export class RegisterComponent {
   isSubmitting = false;
   error: string | null = null;
 
-  constructor(private readonly router: Router) {}
+  constructor(private readonly router: Router, private readonly authService: AuthService) {}
 
   async handleSubmit(): Promise<void> {
     if (!this.form.name.trim() || !this.form.email.trim() || !this.form.password.trim()) {
@@ -44,10 +46,10 @@ export class RegisterComponent {
     this.error = null;
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      void this.router.navigate(['/dashboard']);
-    } catch (_error) {
-      this.error = 'Ocurrió un problema al crear tu cuenta. Intenta nuevamente.';
+      await this.authService.register(this.form.email, this.form.password);
+      await this.router.navigate(['/login']);
+    } catch (err) {
+      this.error = this.resolveErrorMessage(err, 'Ocurrió un problema al crear tu cuenta. Intenta nuevamente.');
     } finally {
       this.isSubmitting = false;
     }
@@ -59,5 +61,15 @@ export class RegisterComponent {
 
   handleLogin(): void {
     void this.router.navigate(['/login']);
+  }
+
+  private resolveErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      return error.error?.msg || error.message || fallback;
+    }
+    if (error instanceof Error) {
+      return error.message || fallback;
+    }
+    return fallback;
   }
 }

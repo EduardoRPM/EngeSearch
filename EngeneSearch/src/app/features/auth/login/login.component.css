@@ -65,8 +65,7 @@
   color: #0f172a;
 }
 
-.field input[type='email'],
-.field input[type='password'] {
+.field input {
   padding: 0.85rem 1rem;
   border-radius: 14px;
   border: 1.5px solid rgba(148, 163, 184, 0.6);
@@ -76,13 +75,11 @@
   color: #0f172a;
 }
 
-.field input[type='email']::placeholder,
-.field input[type='password']::placeholder {
+.field input::placeholder {
   color: rgba(100, 116, 139, 0.8);
 }
 
-.field input[type='email']:focus,
-.field input[type='password']:focus {
+.field input:focus {
   outline: none;
   border-color: rgba(59, 130, 246, 0.85);
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
@@ -156,6 +153,20 @@
   font-size: 0.95rem;
   color: #475569;
   margin: 0;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 0.25rem;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
 }
 
 .promo {
