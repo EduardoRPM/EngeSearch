@@ -1,37 +1,15 @@
 const { Router } = require("express");
+const { getAllUsers, getUserById, updateUserRole } = require("../controllers/users.controller");
+
 const router = Router();
 
+// Lista todos los usuarios
+router.get("/", getAllUsers);
 
-router.get("/", (req, res) => {
+// Detalle de un usuario
+router.get("/:id", getUserById);
 
-    res.status(200).json({
-        msg: "GET Users",
-        result: []
-    });
-})
-
-router.post("/", (req, res) => {
-
-    res.status(200).json({
-        msg: "POST Users",
-        result: []
-    });
-})
-
-router.delete("/", (req, res) => {
-
-    res.status(200).json({
-        msg: "DELETE Users",
-        result: []
-    });
-})
-
-router.put("/", (req, res) => {
-
-    res.status(200).json({
-        msg: "PUT Users",
-        result: []
-    });
-})
+// Actualizar rol de usuario
+router.put("/:id/role", updateUserRole);
 
 module.exports = router;

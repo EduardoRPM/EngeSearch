@@ -15,18 +15,22 @@
     >
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-semibold text-foreground">{{ user.name }}</h3>
-          <p class="text-sm text-muted-foreground">{{ user.email }}</p>
+          <h3 class="text-lg font-semibold text-foreground">{{ user.username }}</h3>
+          <p class="text-xs text-muted-foreground">ID: {{ user.id }}</p>
         </div>
         <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#E8E6FF] text-[#3D4676] capitalize">
           {{ user.role }}
         </span>
       </div>
 
-      <div class="text-sm text-muted-foreground">
+      <div class="text-sm text-muted-foreground space-y-2">
         <div class="flex items-center justify-between border rounded-lg px-3 py-2">
-          <span>Contraseña</span>
+          <span>Contrasena</span>
           <span class="font-mono text-foreground">{{ user.password }}</span>
+        </div>
+        <div class="flex items-center justify-between border rounded-lg px-3 py-2">
+          <span>Rol</span>
+          <span class="font-mono text-foreground capitalize">{{ user.role }}</span>
         </div>
       </div>
 
@@ -56,7 +60,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-lg font-semibold text-foreground">Editar rol</h3>
-          <p class="text-sm text-muted-foreground">Actualiza el rol para {{ selectedUser.name }}</p>
+          <p class="text-sm text-muted-foreground">Actualiza el rol para {{ selectedUser.username }}</p>
         </div>
         <button class="text-muted-foreground hover:text-foreground" (click)="closeModals()" aria-label="Cerrar">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -69,8 +73,7 @@
         <div class="flex items-center gap-3">
           <div class="flex-1">
             <p class="text-sm text-muted-foreground">Usuario</p>
-            <p class="font-semibold text-foreground">{{ selectedUser.name }}</p>
-            <p class="text-xs text-muted-foreground">{{ selectedUser.email }}</p>
+            <p class="font-semibold text-foreground">{{ selectedUser.username }}</p>
           </div>
           <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#E8E6FF] text-[#3D4676] capitalize">
             {{ selectedUser.role }}
@@ -108,7 +111,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-lg font-semibold text-foreground">Eliminar usuario</h3>
-          <p class="text-sm text-muted-foreground">Esta acción es solo de demostración.</p>
+          <p class="text-sm text-muted-foreground">Esta accion es solo de demostracion.</p>
         </div>
         <button class="text-muted-foreground hover:text-foreground" (click)="closeModals()" aria-label="Cerrar">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -118,8 +121,8 @@
       </div>
 
       <div class="space-y-2">
-        <p class="text-sm text-foreground">¿Eliminar a {{ selectedUser.name }}?</p>
-        <p class="text-xs text-muted-foreground">No se eliminará realmente; solo es una vista previa.</p>
+        <p class="text-sm text-foreground">Eliminar a {{ selectedUser.username }}?</p>
+        <p class="text-xs text-muted-foreground">No se eliminara realmente; solo es una vista previa.</p>
       </div>
 
       <div class="flex justify-end gap-2 pt-2">

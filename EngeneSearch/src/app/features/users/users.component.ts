@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../../shared/components/header/header.component';
+import { UsersService } from '../../core/services/users.service';
 
 interface UserCard {
   id: string;
-  name: string;
-  email: string;
+  username: string;
   password: string;
   role: 'admin' | 'user' | 'viewer';
 }
@@ -18,16 +18,8 @@ interface UserCard {
   templateUrl: './users.component.html',
   styleUrl: './users.component.css',
 })
-export class UsersComponent {
-  users: UserCard[] = [
-    {
-      id: 'u-1',
-      name: 'Juan Perez',
-      email: 'juan.perez@example.com',
-      password: '********',
-      role: 'admin',
-    },
-  ];
+export class UsersComponent implements OnInit {
+  users: UserCard[] = [];
 
   showEditModal = false;
   showDeleteModal = false;
@@ -37,6 +29,33 @@ export class UsersComponent {
   resultTitle = '';
   resultMessage = '';
   resultIsError = false;
+
+  constructor(private readonly usersService: UsersService) {}
+
+  ngOnInit(): void {
+    void this.loadUsers();
+  }
+
+  private async loadUsers(): Promise<void> {
+    try {
+      const res = await this.usersService.getAll();
+      const raw = Array.isArray(res?.result) ? res.result : [];
+      this.users = raw.map((u, idx) => ({
+        id: u._id ?? `u-${idx + 1}`,
+        username: u.username ?? 'sin-usuario',
+        password: u.password ?? 'sin-contrasena',
+        role: this.mapRole(u.rol),
+      }));
+    } catch (err) {
+      console.error('Error loading users', err);
+    }
+  }
+
+  private mapRole(role: string | undefined): UserCard['role'] {
+    if (role === 'admin') return 'admin';
+    if (role === 'viewer') return 'viewer';
+    return 'user';
+  }
 
   editRole(user: UserCard): void {
     this.selectedUser = user;
@@ -55,14 +74,27 @@ export class UsersComponent {
     this.selectedUser = null;
   }
 
-  confirmRoleChange(): void {
-    // Solo visualización: no persiste cambios
-    this.showSuccess('Rol actualizado', 'El rol se actualizo correctamente.');
-    this.closeModals();
+  async confirmRoleChange(): Promise<void> {
+    if (!this.selectedUser) {
+      return;
+    }
+    const targetRole = this.newRole;
+    try {
+      await this.usersService.updateRole(this.selectedUser.id, targetRole);
+      this.users = this.users.map((u) =>
+        u.id === this.selectedUser!.id ? { ...u, role: targetRole } : u
+      );
+      this.showSuccess('Rol actualizado', `El rol se actualizo a ${targetRole}.`);
+    } catch (err) {
+      console.error('Error updating user role', err);
+      this.showError('Error', 'No se pudo actualizar el rol. Intenta nuevamente.');
+    } finally {
+      this.closeModals();
+    }
   }
 
   confirmDelete(): void {
-    // Solo visualización: no elimina
+    // Solo visualizacion: no elimina
     this.showSuccess('Usuario eliminado', 'El usuario se elimino correctamente (solo vista previa).');
     this.closeModals();
   }
