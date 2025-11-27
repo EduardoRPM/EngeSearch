@@ -15,12 +15,14 @@ interface LoginResponse {
   role: AppRole;
   username: string;
   userId: string;
+  fullName: string;
 }
 
 interface RegisterResponse {
   msg: string;
   role?: AppRole;
   userId?: string;
+  fullName?: string;
 }
 
 interface AuthState {
@@ -28,6 +30,7 @@ interface AuthState {
   role: AppRole;
   username: string;
   userId: string;
+  fullName: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,12 +52,14 @@ export class AuthService {
       role: response.role,
       username: response.username ?? trimmedUsername,
       userId: response.userId,
+      fullName: response.fullName ?? trimmedUsername,
     });
   }
 
-  async register(username: string, password: string): Promise<void> {
+  async register(fullName: string, username: string, password: string): Promise<void> {
     const trimmedUsername = username.trim();
-    const payload = { username: trimmedUsername, password };
+    const trimmedFullName = fullName.trim();
+    const payload = { username: trimmedUsername, password, fullName: trimmedFullName };
     await firstValueFrom(this.http.post<RegisterResponse>(REGISTER_URL, payload));
   }
 
@@ -108,6 +113,7 @@ export class AuthService {
           role: parsed.role,
           username: parsed.username,
           userId: parsed.userId,
+          fullName: typeof parsed.fullName === 'string' ? parsed.fullName : parsed.username,
         };
       }
     } catch (error) {

@@ -31,7 +31,8 @@ const verifyJWT = async (req = request, res = response, next) => {
         req.user = {
             id: user._id,
             username: user.username,
-            role: user.rol
+            role: user.rol,
+            fullName: user.fullName
         };
 
         next();
