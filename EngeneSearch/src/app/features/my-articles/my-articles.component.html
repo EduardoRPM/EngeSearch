@@ -54,18 +54,18 @@
     <p class="text-sm text-muted-foreground">{{ articlesCount }} articulos</p>
   </div>
 
-  <div class="mx-6" *ngIf="previewArticles.length === 0">
+  <div class="mx-6" *ngIf="displayedArticles.length === 0">
     <div class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
-      Aún no has creado articulos. Completa el formulario de ejemplo y pulsa Guardar para ver una vista previa en tarjeta.
+      Aún no has creado articulos. Completa el formulario y pulsa Guardar o Enviar para verlos en la lista.
     </div>
   </div>
 
   <div
-    *ngIf="previewArticles.length > 0"
+    *ngIf="displayedArticles.length > 0"
     class="mx-6 gap-6"
     [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
   >
-    <div *ngFor="let article of previewArticles; trackBy: trackByArticleId" class="h-full">
+    <div *ngFor="let article of displayedArticles; trackBy: trackByArticleId" class="h-full">
       <app-article-card
         [article]="article"
         [viewMode]="viewMode"

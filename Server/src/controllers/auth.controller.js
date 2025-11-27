@@ -30,6 +30,7 @@ const login = async (req = request, res = response) => {
         const payload = {
             username: user.username,
             role: user.rol,
+            userId: user._id
         };
 
         const token = jwt.sign(payload, process.env.secret_key, {
@@ -40,7 +41,8 @@ const login = async (req = request, res = response) => {
             msg: "Login exitoso",
             token,
             role: user.rol,
-            username: user.username
+            username: user.username,
+            userId: user._id
         });
     } catch (error) {
         console.log(error);
@@ -79,7 +81,8 @@ const register = async (req = request, res = response) => {
         await newUser.save();
         return res.status(201).json({
             msg: "Usuario creado exitosamente",
-            role: newUser.rol
+            role: newUser.rol,
+            userId: newUser._id
         });
 
     } catch (error) {

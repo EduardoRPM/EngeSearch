@@ -1,9 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ArticleCardComponent, ArticleCardData } from '../../shared/components/article-card/article-card.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { ArticleService, ArticleCreatePayload } from '../../core/services/article.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ArticleWithId } from '../../core/models/article.model';
+import { buildDescription, formatAuthor } from '../../core/utils/article-utils';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-my-articles',
@@ -12,11 +16,12 @@ import { ArticleService, ArticleCreatePayload } from '../../core/services/articl
   templateUrl: './my-articles.component.html',
   styleUrls: ['./my-articles.component.css'],
 })
-export class MyArticlesComponent {
+export class MyArticlesComponent implements OnDestroy {
   showForm = false;
   viewMode: 'grid' | 'list' = 'grid';
   articlesCount = 0;
   previewArticles: ArticleCardData[] = [];
+  userArticles: ArticleCardData[] = [];
   isSubmitting = false;
   showResultModal = false;
   resultTitle = '';
@@ -36,7 +41,21 @@ export class MyArticlesComponent {
     link: '',
   };
 
-  constructor(private readonly articleService: ArticleService) {}
+  private readonly subscriptions: Subscription[] = [];
+
+  constructor(
+    private readonly articleService: ArticleService,
+    private readonly authService: AuthService,
+  ) {
+    const sub = this.articleService.getArticles().subscribe((articles) => {
+      this.loadUserArticles(articles);
+    });
+    this.subscriptions.push(sub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
 
   openForm(): void {
     this.showForm = true;
@@ -51,11 +70,15 @@ export class MyArticlesComponent {
   }
 
   async onSave(): Promise<void> {
-    await this.submitArticle('Articulo guardado', 'El articulo se guardo correctamente.');
+    await this.submitArticle('Articulo guardado', 'El articulo se guardo correctamente.', 'enEdicion');
   }
 
   async onSend(): Promise<void> {
-    await this.submitArticle('Articulo enviado', 'El articulo se envio correctamente.');
+    await this.submitArticle('Articulo enviado', 'El articulo se envio correctamente.', 'enRevision');
+  }
+
+  get displayedArticles(): ArticleCardData[] {
+    return [...this.userArticles, ...this.previewArticles];
   }
 
   trackByArticleId(_index: number, article: ArticleCardData): string {
@@ -89,11 +112,13 @@ export class MyArticlesComponent {
       .filter((item) => item.length > 0);
   }
 
-  private buildCreatePayload(): ArticleCreatePayload {
+  private buildCreatePayload(estadoItem: string): ArticleCreatePayload {
     const keywords = this.splitValues(this.formData.keywords);
     const topics = this.splitValues(this.formData.topics);
     const meshTerms = this.splitValues(this.formData.mesh);
     const authors = this.splitValues(this.formData.authors);
+
+    const createdBy = this.authService.getUserId() || undefined;
 
     return {
       title: this.formData.title.trim(),
@@ -111,10 +136,12 @@ export class MyArticlesComponent {
       mesh_terms: meshTerms,
       link: this.formData.link || undefined,
       status: 'En revision',
+      estadoItem,
+      createdBy,
     };
   }
 
-  private async submitArticle(successTitle: string, successMessage: string): Promise<void> {
+  private async submitArticle(successTitle: string, successMessage: string, estadoItem: string): Promise<void> {
     if (this.isSubmitting) {
       return;
     }
@@ -125,7 +152,7 @@ export class MyArticlesComponent {
 
     this.isSubmitting = true;
     try {
-      const payload = this.buildCreatePayload();
+      const payload = this.buildCreatePayload(estadoItem);
       await this.articleService.createArticle(payload);
       const newArticle = this.buildPreviewCard();
       this.previewArticles = [...this.previewArticles, newArticle];
@@ -158,7 +185,7 @@ export class MyArticlesComponent {
   }
 
   private updateArticlesCount(): void {
-    this.articlesCount = this.previewArticles.length;
+    this.articlesCount = this.displayedArticles.length;
   }
 
   private showSuccess(title: string, message: string): void {
@@ -177,5 +204,34 @@ export class MyArticlesComponent {
 
   closeResultModal(): void {
     this.showResultModal = false;
+  }
+
+  private loadUserArticles(articles: ArticleWithId[]): void {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.userArticles = [];
+      this.updateArticlesCount();
+      return;
+    }
+    this.userArticles = articles
+      .filter((article) => article.createdBy === userId)
+      .map((article) => this.mapServerArticle(article));
+    this.updateArticlesCount();
+  }
+
+  private mapServerArticle(article: ArticleWithId): ArticleCardData {
+    return {
+      id: article.id,
+      title: article.title ?? article.title_pubmed ?? 'Articulo sin titulo',
+      year: article.year ?? undefined,
+      author: formatAuthor(article.authors ?? []) ?? undefined,
+      description: buildDescription(article) ?? undefined,
+      tags: (article.keywords ?? []).slice(0, 6),
+      link: article.link ?? null,
+      badge: article.estadoItem ?? article.status ?? undefined,
+      likes: article.citations?.citation_count ?? 0,
+      comments: article.topics?.length ?? 0,
+      image: '/assets/logoN.png',
+    };
   }
 }

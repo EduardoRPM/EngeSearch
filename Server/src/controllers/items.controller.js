@@ -66,6 +66,7 @@ const createItem = async (req = request, res = response) => {
         pmid,
         doi,
         status = 'En revision',
+        estadoItem = 'enRevision',
         results,
         conclusions,
         abstract,
@@ -110,7 +111,9 @@ const createItem = async (req = request, res = response) => {
             link,
             citations,
             formatted_citations,
-            status
+            status,
+            estadoItem,
+            createdBy: req.user?.id || null
         });
         await newItem.save();
         console.log(`[createItem] created id=${newItem._id}`);
@@ -172,6 +175,8 @@ const updateItem = async (req = request, res = response) => {
         "citations",
         "formatted_citations",
         "status"
+        ,
+        "estadoItem"
     ];
 
     const payload = req.body || {};

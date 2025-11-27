@@ -21,6 +21,7 @@ export interface Article {
   pmid?: string;
   doi?: string | null;
   status?: ArticleStatus;
+  estadoItem?: string;
   results?: string[];
   conclusions?: string[];
   abstract?: string[];
@@ -36,6 +37,7 @@ export interface Article {
   citations?: Citations;
   formatted_citations?: FormattedCitations;
   saved?: boolean;
+  createdBy?: string;
 }
 
 export interface ArticleWithId extends Article {

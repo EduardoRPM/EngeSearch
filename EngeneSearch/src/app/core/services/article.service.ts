@@ -12,6 +12,8 @@ export interface ArticleCreatePayload extends Partial<Omit<Article, '_id' | 'sav
   title: string;
   source: string;
   year: string;
+  estadoItem?: string;
+  createdBy?: string;
 }
 
 export type ArticleUpdatePayload = Partial<Omit<Article, '_id' | 'saved'>>;
