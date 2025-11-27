@@ -14,17 +14,23 @@ interface LoginResponse {
   token: string;
   role: AppRole;
   username: string;
+  userId: string;
+  fullName: string;
 }
 
 interface RegisterResponse {
   msg: string;
   role?: AppRole;
+  userId?: string;
+  fullName?: string;
 }
 
 interface AuthState {
   token: string;
   role: AppRole;
   username: string;
+  userId: string;
+  fullName: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,19 +44,22 @@ export class AuthService {
     const trimmedUsername = username.trim();
     const payload = { username: trimmedUsername, password };
     const response = await firstValueFrom(this.http.post<LoginResponse>(LOGIN_URL, payload));
-    if (!response?.token || !response?.role) {
+    if (!response?.token || !response?.role || !response?.userId) {
       throw new Error('Respuesta inválida del servidor: falta información de autenticación.');
     }
     this.saveState({
       token: response.token,
       role: response.role,
       username: response.username ?? trimmedUsername,
+      userId: response.userId,
+      fullName: response.fullName ?? trimmedUsername,
     });
   }
 
-  async register(username: string, password: string): Promise<void> {
+  async register(fullName: string, username: string, password: string): Promise<void> {
     const trimmedUsername = username.trim();
-    const payload = { username: trimmedUsername, password };
+    const trimmedFullName = fullName.trim();
+    const payload = { username: trimmedUsername, password, fullName: trimmedFullName };
     await firstValueFrom(this.http.post<RegisterResponse>(REGISTER_URL, payload));
   }
 
@@ -64,6 +73,10 @@ export class AuthService {
 
   getRole(): AppRole | null {
     return this.authStateSubject.value?.role ?? null;
+  }
+
+  getUserId(): string | null {
+    return this.authStateSubject.value?.userId ?? null;
   }
 
   isAuthenticated(): boolean {
@@ -94,11 +107,13 @@ export class AuthService {
         return null;
       }
       const parsed = JSON.parse(raw) as Partial<AuthState>;
-      if (parsed && parsed.token && parsed.role && parsed.username) {
+      if (parsed && parsed.token && parsed.role && parsed.username && parsed.userId) {
         return {
           token: parsed.token,
           role: parsed.role,
           username: parsed.username,
+          userId: parsed.userId,
+          fullName: typeof parsed.fullName === 'string' ? parsed.fullName : parsed.username,
         };
       }
     } catch (error) {

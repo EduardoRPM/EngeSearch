@@ -46,7 +46,7 @@ export class RegisterComponent {
     this.error = null;
 
     try {
-      await this.authService.register(this.form.email, this.form.password);
+      await this.authService.register(this.form.name, this.form.email, this.form.password);
       await this.router.navigate(['/login']);
     } catch (err) {
       this.error = this.resolveErrorMessage(err, 'Ocurrió un problema al crear tu cuenta. Intenta nuevamente.');

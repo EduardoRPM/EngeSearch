@@ -52,30 +52,130 @@
       </div>
     </div>
     <p class="text-sm text-muted-foreground">{{ articlesCount }} articulos</p>
-  </div>
 
-  <div class="mx-6" *ngIf="previewArticles.length === 0">
-    <div class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
-      Aún no has creado articulos. Completa el formulario de ejemplo y pulsa Guardar para ver una vista previa en tarjeta.
+    <!-- Section chips: alternar entre articulos en edicion y en revision (estilo compartido) -->
+    <div class="mt-4">
+      <div class="flex items-center gap-3 border border-border rounded-full px-2 py-1 bg-card shadow-sm w-fit">
+        <button
+          *ngFor="let status of statuses"
+          type="button"
+          class="px-4 py-2 rounded-full text-sm transition-colors flex items-center gap-2"
+          [ngClass]="
+            currentStatusKey === status.key
+              ? 'bg-[#384CBF] text-white shadow'
+              : 'text-foreground hover:bg-muted'
+          "
+          (click)="setStatusFilter(status.key)"
+          [attr.aria-pressed]="currentStatusKey === status.key"
+        >
+          <span class="whitespace-nowrap">{{ status.label }}</span>
+          <span class="ml-2 text-xs text-muted-foreground">({{ statusCount(status.key) }})</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <div
-    *ngIf="previewArticles.length > 0"
-    class="mx-6 gap-6"
-    [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
-  >
-    <div *ngFor="let article of previewArticles; trackBy: trackByArticleId" class="h-full">
-      <app-article-card
-        [article]="article"
-        [viewMode]="viewMode"
-        [isBookmarked]="false"
-        [disableBookmark]="true"
-        [showBookmark]="false"
-        [showStats]="false"
-      ></app-article-card>
+  <section class="mx-6 space-y-8">
+    <div *ngIf="selectedSection === 'edicion'">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold text-foreground">Articulos en edicion</h3>
+        <span class="text-sm text-muted-foreground">{{ editingArticles.length }} articulos</span>
+      </div>
+      <ng-container *ngIf="editingArticles.length > 0; else emptyEditing">
+        <div
+          class="gap-6"
+          [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
+        >
+          <div *ngFor="let article of editingArticles; trackBy: trackByArticleId" class="relative h-full">
+            <app-article-card
+              [article]="article"
+              [viewMode]="viewMode"
+              [isBookmarked]="false"
+              [disableBookmark]="true"
+              [showBookmark]="false"
+              [showStats]="false"
+            ></app-article-card>
+            <button
+              type="button"
+              class="absolute top-3 right-3 p-2 rounded-full border border-border bg-white shadow hover:bg-muted transition-colors"
+              (click)="startEdit(article.id)"
+              aria-label="Editar articulo"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 3.487 2.651 2.651m-9.546 9.546 8.9-8.9a1.875 1.875 0 0 0-2.652-2.652l-8.9 8.9a2.25 2.25 0 0 0-.589 1.02L5.25 18.75l3.699-.476a2.25 2.25 0 0 0 1.02-.589Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #emptyEditing>
+        <p class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
+          No tienes articulos en edicion.
+        </p>
+      </ng-template>
     </div>
-  </div>
+
+    <div *ngIf="selectedSection === 'evaluados'">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold text-foreground">Artículos Evaluados</h3>
+        <span class="text-sm text-muted-foreground">{{ evaluatedArticles.length }} articulos</span>
+      </div>
+      <ng-container *ngIf="evaluatedArticles.length > 0; else emptyEvaluated">
+        <div
+          class="gap-6"
+          [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
+        >
+          <div *ngFor="let article of evaluatedArticles; trackBy: trackByArticleId" class="relative h-full">
+            <app-article-card
+              [article]="article"
+              [viewMode]="viewMode"
+              [isBookmarked]="false"
+              [disableBookmark]="true"
+              [showBookmark]="false"
+              [showStats]="false"
+            ></app-article-card>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #emptyEvaluated>
+        <p class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
+          No tienes artículos evaluados.
+        </p>
+      </ng-template>
+    </div>
+
+    <div *ngIf="selectedSection === 'revision'">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold text-foreground">Articulos en revision</h3>
+        <span class="text-sm text-muted-foreground">{{ revisionArticles.length }} articulos</span>
+      </div>
+      <ng-container *ngIf="revisionArticles.length > 0; else emptyRevision">
+        <div
+          class="gap-6"
+          [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
+        >
+          <div
+            *ngFor="let article of revisionArticles; trackBy: trackByArticleId"
+            class="h-full opacity-70 grayscale pointer-events-none"
+          >
+            <app-article-card
+              [article]="article"
+              [viewMode]="viewMode"
+              [isBookmarked]="false"
+              [disableBookmark]="true"
+              [showBookmark]="false"
+              [showStats]="false"
+            ></app-article-card>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #emptyRevision>
+        <p class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
+          No tienes articulos en revision.
+        </p>
+      </ng-template>
+    </div>
+  </section>
 
   <!-- Modal Form -->
   <div *ngIf="showForm" class="fixed inset-0 z-50 flex items-start justify-center pt-20">

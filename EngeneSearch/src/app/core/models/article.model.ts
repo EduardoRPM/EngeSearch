@@ -12,7 +12,7 @@ export interface FormattedCitations {
   pubmed?: string;
 }
 
-export type ArticleStatus = 'En revision' | 'Aceptado' | 'Rechazado';
+export type ArticleStatus = 'En edicion' | 'En revision' | 'Aceptado' | 'Rechazado';
 
 export interface Article {
   _id?: string;
@@ -36,6 +36,8 @@ export interface Article {
   citations?: Citations;
   formatted_citations?: FormattedCitations;
   saved?: boolean;
+  createdBy?: string;
+  feedback?: string;
 }
 
 export interface ArticleWithId extends Article {

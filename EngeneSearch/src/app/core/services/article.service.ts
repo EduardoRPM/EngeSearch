@@ -1,17 +1,19 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom, map } from 'rxjs';
 import { Article, ArticleStatus, ArticleWithId } from '../models/article.model';
 import { deriveArticleId } from '../utils/article-utils';
 import { buildApiUrl } from '../config/api.config';
+import { UserSavedArticlesService } from './user-saved-articles.service';
+import { AuthService } from './auth.service';
 
 const ARTICLES_API_URL = buildApiUrl('/items');
-const SAVED_STORAGE_KEY = 'engenesearch.savedArticles';
 
 export interface ArticleCreatePayload extends Partial<Omit<Article, '_id' | 'saved'>> {
   title: string;
   source: string;
   year: string;
+  createdBy?: string;
 }
 
 export type ArticleUpdatePayload = Partial<Omit<Article, '_id' | 'saved'>>;
@@ -23,12 +25,24 @@ interface ItemMutationResponse {
 
 @Injectable({ providedIn: 'root' })
 export class ArticleService {
-  private readonly savedIds = this.readSavedIds();
+  private readonly savedIds = new Set<string>();
+  private readonly savedRecordIds = new Map<string, string>();
   private readonly articlesSubject = new BehaviorSubject<ArticleWithId[]>([]);
   private readonly savedIdsSubject = new BehaviorSubject<Set<string>>(new Set(this.savedIds));
   private loadingPromise: Promise<ArticleWithId[]> | null = null;
+  private savedStatePromise: Promise<void> | null = null;
+  private lastSyncedUserId: string | null = null;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly savedArticlesService: UserSavedArticlesService,
+    private readonly authService: AuthService,
+  ) {
+    this.authService.currentUser$.subscribe(() => {
+      void this.refreshSavedStateFromServer(true);
+    });
+    void this.refreshSavedStateFromServer();
+  }
 
   private async loadArticles(forceReload = false): Promise<ArticleWithId[]> {
     if (this.loadingPromise && !forceReload) {
@@ -72,6 +86,12 @@ export class ArticleService {
     return this.loadArticles(true);
   }
 
+  async fetchArticlesByStatus(status: ArticleStatus): Promise<ArticleWithId[]> {
+    const params = new HttpParams().set('status', status);
+    const articles = await firstValueFrom(this.http.get<Article[]>(ARTICLES_API_URL, { params }));
+    return this.hydrateArticles(articles);
+  }
+
   getArticlesSnapshot(): ArticleWithId[] {
     return this.articlesSubject.value;
   }
@@ -80,40 +100,23 @@ export class ArticleService {
     return this.getArticles().pipe(map((articles) => articles.filter((article) => article.saved)));
   }
 
-  setSavedState(articleId: string, saved: boolean): void {
-    const articles = this.articlesSubject.value;
-    const isKnownArticle = articles.some((article) => article.id === articleId);
-
+  async setSavedState(articleId: string, saved: boolean): Promise<void> {
     if (saved) {
-      this.savedIds.add(articleId);
+      await this.createSavedArticle(articleId);
     } else {
-      this.savedIds.delete(articleId);
+      await this.removeSavedArticle(articleId);
     }
-
-    if (isKnownArticle) {
-      const next = articles.map((article) =>
-        article.id === articleId
-          ? {
-              ...article,
-              saved,
-            }
-          : article,
-      );
-      this.articlesSubject.next(next);
-    }
-
-    this.persistSavedIds(Array.from(this.savedIds));
-    this.savedIdsSubject.next(new Set(this.savedIds));
+    this.applySavedState(articleId, saved);
   }
 
-  toggleSaved(articleId: string): void {
+  async toggleSaved(articleId: string): Promise<void> {
     const article = this.articlesSubject.value.find((item) => item.id === articleId);
     if (!article) {
       const shouldSave = !this.savedIds.has(articleId);
-      this.setSavedState(articleId, shouldSave);
-      return;
+      await this.setSavedState(articleId, shouldSave);
+    } else {
+      await this.setSavedState(articleId, !article.saved);
     }
-    this.setSavedState(articleId, !article.saved);
   }
 
   findById(articleId: string): ArticleWithId | undefined {
@@ -146,32 +149,12 @@ export class ArticleService {
     return updated;
   }
 
-  async updateArticleStatus(id: string, status: ArticleStatus): Promise<ArticleWithId> {
-    return this.updateArticle(id, { status });
-  }
-
-  private readSavedIds(): Set<string> {
-    try {
-      const raw = localStorage.getItem(SAVED_STORAGE_KEY);
-      if (!raw) {
-        return new Set<string>();
-      }
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return new Set<string>(parsed.filter((value): value is string => typeof value === 'string'));
-      }
-    } catch (error) {
-      console.error('Failed to parse saved articles storage', error);
+  async updateArticleStatus(id: string, status: ArticleStatus, feedback?: string): Promise<ArticleWithId> {
+    const payload: ArticleUpdatePayload = { status };
+    if (typeof feedback === 'string') {
+      payload.feedback = feedback;
     }
-    return new Set<string>();
-  }
-
-  private persistSavedIds(ids: string[]): void {
-    try {
-      localStorage.setItem(SAVED_STORAGE_KEY, JSON.stringify(ids));
-    } catch (error) {
-      console.error('Failed to persist saved articles', error);
-    }
+    return this.updateArticle(id, payload);
   }
 
   private resolveArticleId(article: Article, index: number): string {
@@ -202,5 +185,119 @@ export class ArticleService {
     void this.refreshArticles().catch((error) => {
       console.error('Failed to refresh articles after mutation', error);
     });
+  }
+
+  private async refreshSavedStateFromServer(force = false): Promise<void> {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.lastSyncedUserId = null;
+      this.savedIds.clear();
+      this.savedRecordIds.clear();
+      this.savedIdsSubject.next(new Set(this.savedIds));
+      this.updateArticlesSavedFlags();
+      return;
+    }
+
+    if (this.savedStatePromise) {
+      return this.savedStatePromise;
+    }
+
+    if (!force && this.lastSyncedUserId === userId && this.savedRecordIds.size > 0) {
+      return;
+    }
+
+    this.savedStatePromise = this.savedArticlesService
+      .listForCurrentUser()
+      .then((records) => {
+        this.savedIds.clear();
+        this.savedRecordIds.clear();
+
+        records.forEach((record) => {
+          this.savedIds.add(record.article_id);
+          if (record._id) {
+            this.savedRecordIds.set(record.article_id, record._id);
+          }
+        });
+
+        this.savedIdsSubject.next(new Set(this.savedIds));
+        this.updateArticlesSavedFlags();
+        this.lastSyncedUserId = userId;
+      })
+      .catch((error) => {
+        console.error('Failed to fetch saved articles', error);
+      })
+      .finally(() => {
+        this.savedStatePromise = null;
+      });
+
+    await this.savedStatePromise;
+  }
+
+  private async createSavedArticle(articleId: string): Promise<void> {
+    try {
+      const savedArticle = await this.savedArticlesService.saveArticle(articleId);
+      if (savedArticle?._id) {
+        this.savedRecordIds.set(articleId, savedArticle._id);
+      }
+    } catch (error) {
+      if (this.isConflictError(error)) {
+        await this.refreshSavedStateFromServer(true);
+        return;
+      }
+      throw error;
+    }
+  }
+
+  private async removeSavedArticle(articleId: string): Promise<void> {
+    let recordId = this.savedRecordIds.get(articleId);
+    if (!recordId) {
+      await this.refreshSavedStateFromServer(true);
+      recordId = this.savedRecordIds.get(articleId);
+      if (!recordId) {
+        return;
+      }
+    }
+
+    await this.savedArticlesService.deleteSavedArticle(recordId);
+    this.savedRecordIds.delete(articleId);
+  }
+
+  private applySavedState(articleId: string, saved: boolean): void {
+    if (saved) {
+      this.savedIds.add(articleId);
+    } else {
+      this.savedIds.delete(articleId);
+    }
+
+    this.savedIdsSubject.next(new Set(this.savedIds));
+    this.updateArticlesSavedFlags();
+  }
+
+  private updateArticlesSavedFlags(): void {
+    const current = this.articlesSubject.value;
+    if (current.length === 0) {
+      return;
+    }
+
+    let modified = false;
+    const next = current.map((article) => {
+      const saved = this.savedIds.has(article.id);
+      if (article.saved === saved) {
+        return article;
+      }
+      modified = true;
+      return {
+        ...article,
+        saved,
+      };
+    });
+
+    if (modified) {
+      this.articlesSubject.next(next);
+    }
+  }
+
+  private isConflictError(error: unknown): boolean {
+    return error instanceof HttpErrorResponse && error.status === 409;
   }
 }

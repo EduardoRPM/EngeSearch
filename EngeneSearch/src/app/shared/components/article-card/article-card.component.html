@@ -67,9 +67,14 @@
             </ng-container>
           </div>
 
-          <p *ngIf="article.description" class="text-sm text-muted-foreground mb-4 line-clamp-2">
+          <p *ngIf="article.description" class="text-sm text-muted-foreground mb-2 line-clamp-2">
             {{ article.description }}
           </p>
+
+          <div *ngIf="article.feedback" class="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg p-3 mb-4">
+            <p class="font-semibold mb-1">Feedback del administrador</p>
+            <p class="text-red-700 whitespace-pre-line">{{ article.feedback }}</p>
+          </div>
 
           <div
             class="flex items-center mt-auto pt-3 border-t border-border"
@@ -184,9 +189,14 @@
           </ng-container>
         </div>
 
-        <p *ngIf="article.description" class="text-sm text-muted-foreground mb-4 line-clamp-3">
+        <p *ngIf="article.description" class="text-sm text-muted-foreground mb-3 line-clamp-3">
           {{ article.description }}
         </p>
+
+        <div *ngIf="article.feedback" class="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg p-3 mb-4">
+          <p class="font-semibold mb-1">Feedback del administrador</p>
+          <p class="text-red-700 whitespace-pre-line">{{ article.feedback }}</p>
+        </div>
 
         <div
           class="flex items-center pt-3 border-t border-border mt-auto"

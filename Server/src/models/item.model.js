@@ -7,7 +7,7 @@ const itemSchema = new mongoose.Schema({
   doi: String,
   status: {
     type: String,
-    enum: ['En revision', 'Aceptado', 'Rechazado'],
+    enum: ['En edicion', 'En revision', 'Aceptado', 'Rechazado'],
     default: 'En revision'
   },
 
@@ -35,6 +35,16 @@ const itemSchema = new mongoose.Schema({
   formatted_citations: {
     type: Object,
     default: {}
+  },
+
+  feedback: {
+    type: String,
+    default: ''
+  },
+
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   }
 });
 

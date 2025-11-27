@@ -70,8 +70,9 @@
     [ngClass]="viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'flex flex-col'"
   >
    <div class="h-full">
-      <a
-        routerLink="/search"
+      <button
+        type="button"
+        (click)="goToAssistedSearch()"
         class="block w-full h-full bg-card rounded-xl overflow-hidden border border-dashed border-gray-300 flex items-center justify-center hover:shadow-lg transition-colors"
         aria-label="Add more articles"
       >
@@ -80,7 +81,7 @@
           <div class="text-sm font-semibold text-foreground">Explore with Assisted search</div>
           <div class="text-xs text-muted-foreground">Get AI suggestions and add more documents</div>
         </div>
-      </a>
+      </button>
   </div>
     <div *ngFor="let article of displayedArticles; trackBy: trackByArticleId" class="h-full">
       <app-article-card

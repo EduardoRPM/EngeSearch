@@ -13,6 +13,7 @@ export interface ArticleCardData {
   image?: string | null;
   link?: string | null;
   badge?: string;
+  feedback?: string;
 }
 
 @Component({

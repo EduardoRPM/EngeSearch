@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ArticleService } from '../../core/services/article.service';
@@ -24,7 +24,7 @@ interface SearchArticle extends ArticleCardData {
   templateUrl: './search.component.html',
   styleUrl: './search.component.css',
 })
-export class SearchComponent implements OnInit, OnDestroy {
+export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   input = '';
   suggestions: string[] = [];
   selectedKeywords: string[] = [];
@@ -37,6 +37,9 @@ export class SearchComponent implements OnInit, OnDestroy {
   private pendingFavorites = new Set<string>();
   private savedIds = new Set<string>();
   private readonly subscriptions: Subscription[] = [];
+  // when true, focus the main input after view init
+  private focusAssist = false;
+  @ViewChild('mainInput') private mainInput?: ElementRef<HTMLTextAreaElement>;
 
   constructor(
     private readonly searchService: SearchService,
@@ -54,6 +57,12 @@ export class SearchComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const routeSub = this.route.queryParamMap.subscribe((params) => {
       const query = params.get('q')?.trim() ?? '';
+      const assist = params.get('assist');
+
+      if (assist) {
+        // request focus after view init
+        this.focusAssist = true;
+      }
       const current = this.input.trim();
 
       if (query && query !== current) {
@@ -69,6 +78,20 @@ export class SearchComponent implements OnInit, OnDestroy {
     });
 
     this.subscriptions.push(routeSub);
+  }
+
+  ngAfterViewInit(): void {
+    if (this.focusAssist) {
+      // allow time for view to stabilize
+      setTimeout(() => {
+        try {
+          this.mainInput?.nativeElement.focus();
+        } catch (err) {
+          // ignore
+        }
+      }, 50);
+      this.focusAssist = false;
+    }
   }
 
   get hasResults(): boolean {
@@ -146,7 +169,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.favoriteError = null;
 
     try {
-      this.articleService.setSavedState(article.id, desiredSaved);
+      await this.articleService.setSavedState(article.id, desiredSaved);
       if (desiredSaved) {
         this.favorites.set(article.id, article);
       } else {

@@ -27,9 +27,12 @@ const login = async (req = request, res = response) => {
                 msg: "Usuario / Password no son correctos - password"
             });
         }
+        const displayName = user.fullName || user.username;
         const payload = {
             username: user.username,
             role: user.rol,
+            userId: user._id,
+            fullName: displayName
         };
 
         const token = jwt.sign(payload, process.env.secret_key, {
@@ -40,7 +43,9 @@ const login = async (req = request, res = response) => {
             msg: "Login exitoso",
             token,
             role: user.rol,
-            username: user.username
+            username: user.username,
+            userId: user._id,
+            fullName: displayName
         });
     } catch (error) {
         console.log(error);
@@ -53,14 +58,20 @@ const login = async (req = request, res = response) => {
 
 };
 const register = async (req = request, res = response) => {
-    const { username, password, role } = req.body;
+    const { username, password, role, fullName } = req.body;
     
-    if (!username || !password) {
+    if (!username || !password || !fullName) {
         return res.status(400).json({
             msg: "Faltan datos obligatorios"
         });
     }
     try {
+        const trimmedFullName = fullName.trim();
+        if (!trimmedFullName) {
+            return res.status(400).json({
+                msg: "Faltan datos obligatorios"
+            });
+        }
         const user = await User.findOne({ username });
         if (user) {
             return res.status(400).json({
@@ -73,13 +84,16 @@ const register = async (req = request, res = response) => {
         const newUser = new User({
             username,
             password: hashedPassword,
-            rol: role === 'admin' ? 'admin' : 'user'
+            rol: role === 'admin' ? 'admin' : 'user',
+            fullName: trimmedFullName
         });
 
         await newUser.save();
         return res.status(201).json({
             msg: "Usuario creado exitosamente",
-            role: newUser.rol
+            role: newUser.rol,
+            userId: newUser._id,
+            fullName: newUser.fullName
         });
 
     } catch (error) {

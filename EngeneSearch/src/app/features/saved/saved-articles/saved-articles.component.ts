@@ -50,7 +50,7 @@ export class SavedArticlesComponent implements OnChanges {
     this.error = null;
 
     try {
-      this.articleService.setSavedState(article.id, false);
+      await this.articleService.setSavedState(article.id, false);
       this.displayedArticles = this.displayedArticles.filter((item) => item.id !== article.id);
     } catch (error) {
       console.error('Error removing saved article', error);
@@ -62,6 +62,11 @@ export class SavedArticlesComponent implements OnChanges {
 
   goToGraph(): void {
     void this.router.navigate(['/graph']);
+  }
+
+  goToAssistedSearch(): void {
+    // navigate to search page and request assistant focus
+    void this.router.navigate(['/search'], { queryParams: { assist: '1' } });
   }
 
   trackByArticleId(_index: number, article: SavedArticleCard): string {
