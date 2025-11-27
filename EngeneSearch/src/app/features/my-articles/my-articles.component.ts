@@ -6,7 +6,7 @@ import { ArticleCardComponent, ArticleCardData } from '../../shared/components/a
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { ArticleService, ArticleCreatePayload } from '../../core/services/article.service';
 import { AuthService } from '../../core/services/auth.service';
-import { ArticleWithId } from '../../core/models/article.model';
+import { ArticleStatus, ArticleWithId } from '../../core/models/article.model';
 import { buildDescription, formatAuthor } from '../../core/utils/article-utils';
 
 @Component({
@@ -68,11 +68,11 @@ export class MyArticlesComponent implements OnDestroy {
   }
 
   get editingArticles(): ArticleCardData[] {
-    return this.filterArticlesByState('enEdicion');
+    return this.filterArticlesByStatus('En edicion');
   }
 
   get revisionArticles(): ArticleCardData[] {
-    return this.filterArticlesByState('enRevision');
+    return this.filterArticlesByStatus('En revision');
   }
 
   openForm(): void {
@@ -101,7 +101,7 @@ export class MyArticlesComponent implements OnDestroy {
       return [];
     }
     return this.userArticles
-      .filter((article) => article.createdBy === userId && ['aceptado', 'rechazado'].includes((article.estadoItem ?? '').toLowerCase()))
+      .filter((article) => article.createdBy === userId && ['Aceptado', 'Rechazado'].includes(article.status ?? ''))
       .map((article) => this.mapServerArticle(article));
   }
 
@@ -123,7 +123,7 @@ export class MyArticlesComponent implements OnDestroy {
     const message = this.isEditingExisting
       ? 'Los cambios se guardaron correctamente.'
       : 'El articulo se guardo correctamente.';
-    await this.submitArticle(title, message, 'enEdicion');
+    await this.submitArticle(title, message, 'En edicion');
   }
 
   async onSend(): Promise<void> {
@@ -131,7 +131,7 @@ export class MyArticlesComponent implements OnDestroy {
     const message = this.isEditingExisting
       ? 'El articulo se envio para revision.'
       : 'El articulo se envio correctamente.';
-    await this.submitArticle(title, message, 'enRevision');
+    await this.submitArticle(title, message, 'En revision');
   }
 
   trackByArticleId(_index: number, article: ArticleCardData): string {
@@ -139,7 +139,7 @@ export class MyArticlesComponent implements OnDestroy {
   }
 
   startEdit(articleId: string): void {
-    const article = this.userArticles.find((item) => item.id === articleId && (item.estadoItem ?? 'enRevision') === 'enEdicion');
+    const article = this.userArticles.find((item) => item.id === articleId && (item.status ?? 'En revision') === 'En edicion');
     if (!article) {
       return;
     }
@@ -172,7 +172,7 @@ export class MyArticlesComponent implements OnDestroy {
       .filter((item) => item.length > 0);
   }
 
-  private buildMutationPayload(estadoItem: string, includeCreatedBy: boolean): ArticleCreatePayload {
+  private buildMutationPayload(targetStatus: ArticleStatus, includeCreatedBy: boolean): ArticleCreatePayload {
     const keywords = this.splitValues(this.formData.keywords);
     const topics = this.splitValues(this.formData.topics);
     const meshTerms = this.splitValues(this.formData.mesh);
@@ -193,8 +193,7 @@ export class MyArticlesComponent implements OnDestroy {
       topics,
       mesh_terms: meshTerms,
       link: this.formData.link || undefined,
-      status: 'En revision',
-      estadoItem,
+      status: targetStatus,
     };
 
     const createdBy = this.authService.getUserId();
@@ -205,7 +204,7 @@ export class MyArticlesComponent implements OnDestroy {
     return payload;
   }
 
-  private async submitArticle(successTitle: string, successMessage: string, estadoItem: string): Promise<void> {
+  private async submitArticle(successTitle: string, successMessage: string, targetStatus: ArticleStatus): Promise<void> {
     if (this.isSubmitting) {
       return;
     }
@@ -216,7 +215,7 @@ export class MyArticlesComponent implements OnDestroy {
 
     this.isSubmitting = true;
     try {
-      const payload = this.buildMutationPayload(estadoItem, !this.isEditingExisting);
+      const payload = this.buildMutationPayload(targetStatus, !this.isEditingExisting);
       if (this.isEditingExisting && this.editingArticleId) {
         await this.articleService.updateArticle(this.editingArticleId, payload);
       } else {
@@ -281,9 +280,9 @@ export class MyArticlesComponent implements OnDestroy {
     this.updateArticlesCount();
   }
 
-  private filterArticlesByState(target: string): ArticleCardData[] {
+  private filterArticlesByStatus(target: ArticleStatus): ArticleCardData[] {
     return this.userArticles
-      .filter((article) => (article.estadoItem ?? 'enRevision') === target)
+      .filter((article) => (article.status ?? 'En revision') === target)
       .map((article) => this.mapServerArticle(article));
   }
 
@@ -296,7 +295,7 @@ export class MyArticlesComponent implements OnDestroy {
       description: buildDescription(article) ?? undefined,
       tags: (article.keywords ?? []).slice(0, 6),
       link: article.link ?? null,
-      badge: article.estadoItem ?? article.status ?? undefined,
+      badge: article.status ?? undefined,
       likes: article.citations?.citation_count ?? 0,
       comments: article.topics?.length ?? 0,
       image: '/assets/logoN.png',

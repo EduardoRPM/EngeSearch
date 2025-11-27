@@ -7,13 +7,8 @@ const itemSchema = new mongoose.Schema({
   doi: String,
   status: {
     type: String,
-    enum: ['En revision', 'Aceptado', 'Rechazado'],
+    enum: ['En edicion', 'En revision', 'Aceptado', 'Rechazado'],
     default: 'En revision'
-  },
-  estadoItem: {
-    type: String,
-    enum: ['enEdicion', 'enRevision', 'publicado'],
-    default: 'enRevision'
   },
 
   results: [String],

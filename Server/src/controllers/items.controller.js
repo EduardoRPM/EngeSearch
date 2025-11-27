@@ -20,11 +20,20 @@ const MAX_LIMIT = 40;
 
 const getAllItems = async (req = request, res = response) => {
     logRequest(req, 'getAllItems');
-    const { search } = req.query;
+    const { search, status } = req.query;
 
     try {
         const filters = buildSearchFilters(search);
-        const result = await item.find(filters).lean();
+        const query = { ...filters };
+        const statuses = parseStatusFilter(status);
+
+        if (statuses.length === 1) {
+            query.status = statuses[0];
+        } else if (statuses.length > 1) {
+            query.status = { $in: statuses };
+        }
+
+        const result = await item.find(query).lean();
         console.log(`[getAllItems] returned ${Array.isArray(result) ? result.length : 0} items`);
         res.status(200).json(result);
     } catch (error) {
@@ -66,7 +75,6 @@ const createItem = async (req = request, res = response) => {
         pmid,
         doi,
         status = 'En revision',
-        estadoItem = 'enRevision',
         results,
         conclusions,
         abstract,
@@ -112,7 +120,6 @@ const createItem = async (req = request, res = response) => {
             citations,
             formatted_citations,
             status,
-            estadoItem,
             createdBy: req.user?.id || null
         });
         await newItem.save();
@@ -175,8 +182,6 @@ const updateItem = async (req = request, res = response) => {
         "citations",
         "formatted_citations",
         "status"
-        ,
-        "estadoItem"
     ];
 
     const payload = req.body || {};
@@ -276,6 +281,23 @@ const buildSearchFilters = (search) => {
             $options: "i"
         }
     };
+};
+
+const parseStatusFilter = (status) => {
+    if (!status) {
+        return [];
+    }
+
+    const validStatuses = ["En edicion", "En revision", "Aceptado", "Rechazado"];
+    const normalize = (value) => String(value).trim();
+
+    const values = Array.isArray(status)
+        ? status.map(normalize)
+        : String(status)
+            .split(",")
+            .map(normalize);
+
+    return values.filter((value) => validStatuses.includes(value));
 };
 
 const escapeRegex = (value) => {

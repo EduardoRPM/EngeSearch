@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom, map } from 'rxjs';
 import { Article, ArticleStatus, ArticleWithId } from '../models/article.model';
 import { deriveArticleId } from '../utils/article-utils';
@@ -13,7 +13,6 @@ export interface ArticleCreatePayload extends Partial<Omit<Article, '_id' | 'sav
   title: string;
   source: string;
   year: string;
-  estadoItem?: string;
   createdBy?: string;
 }
 
@@ -85,6 +84,12 @@ export class ArticleService {
 
   async refreshArticles(): Promise<ArticleWithId[]> {
     return this.loadArticles(true);
+  }
+
+  async fetchArticlesByStatus(status: ArticleStatus): Promise<ArticleWithId[]> {
+    const params = new HttpParams().set('status', status);
+    const articles = await firstValueFrom(this.http.get<Article[]>(ARTICLES_API_URL, { params }));
+    return this.hydrateArticles(articles);
   }
 
   getArticlesSnapshot(): ArticleWithId[] {

@@ -27,7 +27,15 @@
     {{ statusError }}
   </div>
 
-  <div *ngIf="filteredArticles.length === 0" class="text-sm text-muted-foreground">
+  <div *ngIf="loadError" class="text-sm text-red-600">
+    {{ loadError }}
+  </div>
+
+  <div *ngIf="isCurrentStatusLoading" class="text-sm text-muted-foreground">
+    Cargando articulos con estado {{ currentStatus }}...
+  </div>
+
+  <div *ngIf="!isCurrentStatusLoading && !loadError && filteredArticles.length === 0" class="text-sm text-muted-foreground">
     No hay articulos con el estado {{ currentStatus }}.
   </div>
 
