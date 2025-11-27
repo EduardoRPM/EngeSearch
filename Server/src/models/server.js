@@ -14,10 +14,13 @@ class Server {
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
             allowedHeaders: ['Content-Type', 'Authorization']
         };
+
+
         this.middlewares();
         this.itemsPath = "/items";
         this.usersPath = "/users";
-
+        this.authPath = "/auth";
+        
         this.routes();
         connectDB();
 
@@ -32,9 +35,9 @@ class Server {
     routes() {
         this.app.use(this.itemsPath, require("../routes/items.route"));
         this.app.use(this.usersPath, require("../routes/users.route"));
+        this.app.use(this.authPath, require("../routes/auth.route"));
 
-
-
+  
         this.app.get(/.*/, function (req, res) {
             res.status(404).json({
                 msg: "Ruta no encontrada",
