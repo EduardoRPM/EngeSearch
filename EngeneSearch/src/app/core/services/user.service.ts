@@ -13,6 +13,11 @@ export interface UserProfile {
 }
 
 const PROFILE_URL = buildApiUrl('/users/me');
+const PROFILE_PASSWORD_URL = buildApiUrl('/users/me/password');
+
+interface MessageResponse {
+  msg: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -24,5 +29,11 @@ export class UserService {
 
   fetchProfile(): Promise<UserProfile> {
     return firstValueFrom(this.getProfile());
+  }
+
+  updatePassword(newPassword: string): Promise<MessageResponse> {
+    return firstValueFrom(
+      this.http.put<MessageResponse>(PROFILE_PASSWORD_URL, { newPassword })
+    );
   }
 }

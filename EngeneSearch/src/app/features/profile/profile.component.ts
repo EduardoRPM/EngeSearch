@@ -32,6 +32,7 @@ export class ProfileComponent implements OnInit {
 
   passwordMessage = '';
   passwordError = '';
+  isUpdatingPassword = false;
 
   constructor(private readonly userService: UserService) {}
 
@@ -67,7 +68,7 @@ export class ProfileComponent implements OnInit {
     this.showPasswordForm = !this.showPasswordForm;
   }
 
-  savePassword(): void {
+  async savePassword(): Promise<void> {
     this.passwordMessage = '';
     this.passwordError = '';
 
@@ -81,7 +82,16 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.passwordMessage = 'Contrasena actualizada correctamente (demo).';
-    this.passwordForm = { newPassword: '', confirmPassword: '' };
+    this.isUpdatingPassword = true;
+    try {
+      await this.userService.updatePassword(this.passwordForm.newPassword);
+      this.passwordMessage = 'Contrasena actualizada correctamente.';
+      this.passwordForm = { newPassword: '', confirmPassword: '' };
+    } catch (error) {
+      console.error('Error al actualizar la contrasena', error);
+      this.passwordError = 'No se pudo actualizar la contrasena. Intenta nuevamente.';
+    } finally {
+      this.isUpdatingPassword = false;
+    }
   }
 }

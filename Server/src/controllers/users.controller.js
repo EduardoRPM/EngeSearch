@@ -1,4 +1,5 @@
 const { request, response } = require('express');
+const bcrypt = require('bcryptjs');
 const User = require('../models/user.model');
 
 const ALLOWED_ROLES = ['admin', 'user', 'viewer'];
@@ -106,6 +107,45 @@ const updateUserRole = async (req, res) => {
   }
 };
 
+// Actualiza la contraseña del usuario autenticado
+const updateMyPassword = async (req = request, res = response) => {
+  const userId = req.user?.id;
+  const { newPassword } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ msg: 'Usuario no autenticado' });
+  }
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 6) {
+    return res.status(400).json({ msg: 'La nueva contraseña es requerida y debe tener al menos 6 caracteres' });
+  }
+
+  try {
+    const hashed = await bcrypt.hash(newPassword.trim(), 10);
+    const updated = await User.findByIdAndUpdate(
+      userId,
+      { password: hashed },
+      { new: true, fields: 'username fullName rol' }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ msg: 'Usuario no encontrado' });
+    }
+
+    return res.status(200).json({
+      msg: 'Contraseña actualizada correctamente',
+      result: {
+        _id: updated._id,
+        username: updated.username,
+        fullName: updated.fullName,
+        rol: updated.rol,
+      },
+    });
+  } catch (error) {
+    console.error('[users.controller] Error al actualizar contraseña', error);
+    return res.status(500).json({ msg: 'Error al actualizar la contraseña' });
+  }
+};
+
 // Elimina un usuario por id
 const deleteUser = async (req, res) => {
   const { id } = req.params;
@@ -133,5 +173,6 @@ module.exports = {
   getUserById,
   updateUserRole,
   getProfile,
+  updateMyPassword,
   deleteUser,
 };

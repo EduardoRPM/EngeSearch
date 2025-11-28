@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { getAllUsers, getUserById, updateUserRole, getProfile, deleteUser } = require("../controllers/users.controller");
+const { getAllUsers, getUserById, updateUserRole, getProfile, deleteUser, updateMyPassword } = require("../controllers/users.controller");
 const { verifyJWT } = require("../../middlewares/verifyJWT");
 
 const router = Router();
@@ -9,6 +9,9 @@ router.get("/", getAllUsers);
 
 // Perfil del usuario autenticado (debe ir antes de la ruta paramétrica)
 router.get("/me", [verifyJWT], getProfile);
+
+// Cambiar contraseña del usuario autenticado
+router.put("/me/password", [verifyJWT], updateMyPassword);
 
 // Detalle de un usuario
 router.get("/:id", getUserById);
