@@ -46,14 +46,14 @@ export class ProfileComponent implements OnInit {
     try {
       const profile = await this.userService.fetchProfile();
       this.profile = {
-        name: profile.fullName,
+        name: profile.fullName?.trim() || profile.username,
         email: profile.username,
         role: profile.rol,
         password: profile.password,
       };
     } catch (error) {
       console.error('Error al cargar el perfil', error);
-      this.loadError = 'No se pudo cargar la informacion de tu perfil.';
+      this.loadError = 'No se pudo cargar la información de tu perfil.';
       this.profile = null;
     } finally {
       this.isLoading = false;
@@ -73,23 +73,23 @@ export class ProfileComponent implements OnInit {
     this.passwordError = '';
 
     if (!this.passwordForm.newPassword || !this.passwordForm.confirmPassword) {
-      this.passwordError = 'Completa ambos campos de contrasena.';
+      this.passwordError = 'Completa ambos campos de contraseña.';
       return;
     }
 
     if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
-      this.passwordError = 'Las contrasenas no coinciden.';
+      this.passwordError = 'Las contraseñas no coinciden.';
       return;
     }
 
     this.isUpdatingPassword = true;
     try {
       await this.userService.updatePassword(this.passwordForm.newPassword);
-      this.passwordMessage = 'Contrasena actualizada correctamente.';
+      this.passwordMessage = 'Contraseña actualizada correctamente.';
       this.passwordForm = { newPassword: '', confirmPassword: '' };
     } catch (error) {
-      console.error('Error al actualizar la contrasena', error);
-      this.passwordError = 'No se pudo actualizar la contrasena. Intenta nuevamente.';
+      console.error('Error al actualizar la contraseña', error);
+      this.passwordError = 'No se pudo actualizar la contraseña. Intenta nuevamente.';
     } finally {
       this.isUpdatingPassword = false;
     }

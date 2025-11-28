@@ -23,8 +23,8 @@ export class MyArticlesComponent implements OnDestroy {
   selectedSection: 'edicion' | 'revision' | 'evaluados' = 'edicion';
   // statuses for the UI chip design (key/label)
   statuses: Array<{ key: 'edicion' | 'revision' | 'evaluados'; label: string }> = [
-    { key: 'edicion', label: 'Articulos en edicion' },
-    { key: 'revision', label: 'Articulos en revision' },
+    { key: 'edicion', label: 'Artículos en edición' },
+    { key: 'revision', label: 'Artículos en revisión' },
     { key: 'evaluados', label: 'Artículos Evaluados' },
   ];
   currentStatusKey: 'edicion' | 'revision' | 'evaluados' = 'edicion';

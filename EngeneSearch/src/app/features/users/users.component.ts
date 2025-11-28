@@ -8,7 +8,7 @@ interface UserCard {
   id: string;
   username: string;
   password: string;
-  role: 'admin' | 'user' | 'viewer';
+  role: 'admin' | 'user';
 }
 
 @Component({
@@ -16,7 +16,7 @@ interface UserCard {
   standalone: true,
   imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './users.component.html',
-  styleUrl: './users.component.css',
+  styleUrls: ['./users.component.css'],
 })
 export class UsersComponent implements OnInit {
   users: UserCard[] = [];
@@ -54,7 +54,6 @@ export class UsersComponent implements OnInit {
 
   private mapRole(role: string | undefined): UserCard['role'] {
     if (role === 'admin') return 'admin';
-    if (role === 'viewer') return 'viewer';
     return 'user';
   }
 

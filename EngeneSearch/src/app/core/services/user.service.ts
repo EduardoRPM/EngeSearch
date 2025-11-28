@@ -19,16 +19,21 @@ interface MessageResponse {
   msg: string;
 }
 
+interface RawProfileResponse {
+  msg: string;
+  result: UserProfile;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   constructor(private readonly http: HttpClient) {}
 
   getProfile() {
-    return this.http.get<UserProfile>(PROFILE_URL);
+    return this.http.get<RawProfileResponse>(PROFILE_URL);
   }
 
   fetchProfile(): Promise<UserProfile> {
-    return firstValueFrom(this.getProfile());
+    return firstValueFrom(this.getProfile()).then((res) => res.result);
   }
 
   updatePassword(newPassword: string): Promise<MessageResponse> {

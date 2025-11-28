@@ -53,7 +53,7 @@ const getProfile = async (req = request, res = response) => {
   }
 
   try {
-    const user = await User.findById(userId, 'username password rol');
+    const user = await User.findById(userId, 'username fullName password rol');
     if (!user) {
       return res.status(404).json({
         msg: 'Usuario no encontrado',

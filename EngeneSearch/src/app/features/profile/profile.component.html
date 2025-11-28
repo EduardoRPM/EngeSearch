@@ -3,7 +3,7 @@
 <div class="p-6 space-y-6 pb-20">
   <div>
     <h1 class="text-2xl font-bold text-foreground">Perfil personal</h1>
-    <p class="text-sm text-muted-foreground">Consulta tu informacion y actualiza tu contrasena.</p>
+    <p class="text-sm text-muted-foreground">Consulta tu información y actualiza tu contraseña.</p>
   </div>
 
   <div *ngIf="loadError" class="rounded-lg border border-red-200 bg-red-50 text-red-700 p-4 flex items-start gap-3">
@@ -18,7 +18,7 @@
   </div>
 
   <div *ngIf="isLoading" class="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-    Cargando informacion...
+    Cargando información...
   </div>
 
   <ng-container *ngIf="!isLoading && profile as profileData">
@@ -40,7 +40,7 @@
             <dd class="text-foreground font-medium">{{ profileData.name }}</dd>
           </div>
           <div>
-            <dt class="text-muted-foreground">Correo electronico</dt>
+            <dt class="text-muted-foreground">Correo electrónico</dt>
             <dd class="text-foreground font-medium">{{ profileData.email }}</dd>
           </div>
           <div>
@@ -56,8 +56,8 @@
     <section class="bg-card border border-border rounded-2xl p-6 info-card space-y-4">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <h2 class="text-lg font-semibold text-foreground">Actualizar contrasena</h2>
-          <p class="text-sm text-muted-foreground">Cambia tu contrasena de acceso.</p>
+          <h2 class="text-lg font-semibold text-foreground">Actualizar contraseña</h2>
+          <p class="text-sm text-muted-foreground">Cambia tu contraseña de acceso.</p>
         </div>
         <button
           type="button"
@@ -88,21 +88,21 @@
 
         <div class="grid gap-4 md:grid-cols-2">
           <label class="text-sm font-medium text-foreground space-y-2">
-            Nueva contrasena
+            Nueva contraseña
             <input
               [(ngModel)]="passwordForm.newPassword"
               type="password"
               class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#384CBF]"
-              placeholder="Nueva contrasena"
+              placeholder="Nueva contraseña"
             />
           </label>
           <label class="text-sm font-medium text-foreground space-y-2">
-            Confirmar contrasena
+            Confirmar contraseña
             <input
               [(ngModel)]="passwordForm.confirmPassword"
               type="password"
               class="w-full border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#384CBF]"
-              placeholder="Confirmar contrasena"
+              placeholder="Confirmar contraseña"
             />
           </label>
         </div>
@@ -114,7 +114,7 @@
             (click)="savePassword()"
             [disabled]="isUpdatingPassword"
           >
-            {{ isUpdatingPassword ? 'Guardando...' : 'Guardar nueva contrasena' }}
+            {{ isUpdatingPassword ? 'Guardando...' : 'Guardar nueva contraseña' }}
           </button>
         </div>
       </div>

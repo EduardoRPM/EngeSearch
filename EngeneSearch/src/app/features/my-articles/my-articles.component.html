@@ -2,7 +2,7 @@
 
 <div class="pb-20">
   <div class="m-6 flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-foreground">Mis articulos</h1>
+    <h1 class="text-2xl font-bold text-foreground">Mis artículos</h1>
 
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-2">
@@ -34,7 +34,7 @@
         class="bg-[#384CBF] text-white px-4 py-2 rounded hover:opacity-90"
         (click)="openForm()"
       >
-        Crear Articulo
+        Crear Artículo
       </button>
     </div>
   </div>
@@ -46,12 +46,12 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 6.5h7v11H3zM14 6.5h7v11h-7zM10 6.5v11" />
           </svg>
-          Mis articulos
+          Mis artículos
         </h2>
-        <p class="text-sm text-muted-foreground mt-1">Aqui puedes crear y organizar tus articulos</p>
+        <p class="text-sm text-muted-foreground mt-1">Aquí puedes crear y organizar tus artículos</p>
       </div>
     </div>
-    <p class="text-sm text-muted-foreground">{{ articlesCount }} articulos</p>
+    <p class="text-sm text-muted-foreground">{{ articlesCount }} artículos</p>
 
     <!-- Section chips: alternar entre articulos en edicion y en revision (estilo compartido) -->
     <div class="mt-4">
@@ -78,7 +78,7 @@
   <section class="mx-6 space-y-8">
     <div *ngIf="selectedSection === 'edicion'">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-foreground">Articulos en edicion</h3>
+        <h3 class="text-lg font-semibold text-foreground">Artículos en edición</h3>
         <span class="text-sm text-muted-foreground">{{ editingArticles.length }} articulos</span>
       </div>
       <ng-container *ngIf="editingArticles.length > 0; else emptyEditing">
@@ -99,7 +99,7 @@
               type="button"
               class="absolute top-3 right-3 p-2 rounded-full border border-border bg-white shadow hover:bg-muted transition-colors"
               (click)="startEdit(article.id)"
-              aria-label="Editar articulo"
+              aria-label="Editar artículo"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 3.487 2.651 2.651m-9.546 9.546 8.9-8.9a1.875 1.875 0 0 0-2.652-2.652l-8.9 8.9a2.25 2.25 0 0 0-.589 1.02L5.25 18.75l3.699-.476a2.25 2.25 0 0 0 1.02-.589Z" />
@@ -110,7 +110,7 @@
       </ng-container>
       <ng-template #emptyEditing>
         <p class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
-          No tienes articulos en edicion.
+          No tienes artículos en edición.
         </p>
       </ng-template>
     </div>
@@ -118,7 +118,7 @@
     <div *ngIf="selectedSection === 'evaluados'">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-semibold text-foreground">Artículos Evaluados</h3>
-        <span class="text-sm text-muted-foreground">{{ evaluatedArticles.length }} articulos</span>
+        <span class="text-sm text-muted-foreground">{{ evaluatedArticles.length }} artículos</span>
       </div>
       <ng-container *ngIf="evaluatedArticles.length > 0; else emptyEvaluated">
         <div
@@ -146,8 +146,8 @@
 
     <div *ngIf="selectedSection === 'revision'">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-foreground">Articulos en revision</h3>
-        <span class="text-sm text-muted-foreground">{{ revisionArticles.length }} articulos</span>
+        <h3 class="text-lg font-semibold text-foreground">Artículos en revisión</h3>
+        <span class="text-sm text-muted-foreground">{{ revisionArticles.length }} artículos</span>
       </div>
       <ng-container *ngIf="revisionArticles.length > 0; else emptyRevision">
         <div
@@ -171,7 +171,7 @@
       </ng-container>
       <ng-template #emptyRevision>
         <p class="text-sm text-muted-foreground bg-muted rounded-xl border border-border p-4">
-          No tienes articulos en revision.
+          No tienes artículos en revisión.
         </p>
       </ng-template>
     </div>
@@ -183,7 +183,7 @@
 
     <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-1/2 z-10 p-6 form-card">
       <div class="modal-header flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium">Crear Articulo</h3>
+        <h3 class="text-lg font-medium">Crear Artículo</h3>
         <button class="text-gray-500 flex items-center gap-2" (click)="closeForm()" aria-label="Cerrar">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -193,7 +193,7 @@
 
       <form class="space-y-4 modal-body">
         <div>
-          <label class="block text-sm font-medium">Titulo <span class="text-red-600">*</span></label>
+          <label class="block text-sm font-medium">Título <span class="text-red-600">*</span></label>
           <input class="mt-1 block w-full border rounded px-3 py-2" required [(ngModel)]="formData.title" name="title" />
         </div>
 
@@ -211,7 +211,7 @@
             <input class="mt-1 block w-full border rounded px-3 py-2" [(ngModel)]="formData.doi" name="doi" />
           </div>
           <div>
-            <label class="block text-sm font-medium">Ano</label>
+            <label class="block text-sm font-medium">Año</label>
             <input class="mt-1 block w-full border rounded px-3 py-2" [(ngModel)]="formData.year" name="year" />
           </div>
         </div>
