@@ -13,10 +13,10 @@
       *ngFor="let user of users"
       class="bg-card border border-border rounded-xl shadow-sm p-4 flex flex-col gap-3 user-card"
     >
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-lg font-semibold text-foreground">{{ user.username }}</h3>
-          <p class="text-xs text-muted-foreground">ID: {{ user.id }}</p>
+      <div class="flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <h3 class="text-lg font-semibold text-foreground break-words">{{ user.username }}</h3>
+          <p class="text-xs text-muted-foreground truncate">ID: {{ user.id }}</p>
         </div>
         <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#E8E6FF] text-[#3D4676] capitalize">
           {{ user.role }}
