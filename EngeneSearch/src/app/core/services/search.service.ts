@@ -5,6 +5,7 @@ import { SearchArticleResult } from '../models/article.model';
 import { buildApiUrl } from '../config/api.config';
 
 const SEARCH_API_URL = buildApiUrl('/items/search');
+const SEARCH_PREVIEW_API_URL = buildApiUrl('/items/search/preview');
 
 export interface SearchInput {
   keywords?: string[];
@@ -16,6 +17,13 @@ interface SearchPayload {
   keywords?: string[];
   text?: string;
   limit?: number;
+}
+
+export interface SearchPreviewResponse {
+  results: SearchArticleResult[];
+  totalMatches: number;
+  lockedCount: number;
+  previewLimit: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +38,20 @@ export class SearchService {
 
     const results = await firstValueFrom(this.http.post<SearchArticleResult[]>(SEARCH_API_URL, payload));
     return results;
+  }
+
+  async searchPreview(input: SearchInput): Promise<SearchPreviewResponse> {
+    const payload = this.buildPayload(input);
+    if (!payload.text && (!payload.keywords || payload.keywords.length === 0)) {
+      return {
+        results: [],
+        totalMatches: 0,
+        lockedCount: 0,
+        previewLimit: 0,
+      };
+    }
+
+    return firstValueFrom(this.http.post<SearchPreviewResponse>(SEARCH_PREVIEW_API_URL, payload));
   }
 
   private buildPayload(input: SearchInput): SearchPayload {

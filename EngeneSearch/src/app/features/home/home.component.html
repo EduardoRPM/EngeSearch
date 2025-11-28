@@ -163,7 +163,7 @@
             <ng-container *ngIf="!homeIsSearching">
               <div *ngIf="homeResults.length" class="home-results__list">
                 <div
-                  *ngFor="let article of homeResults | slice:0:3; trackBy: trackByHomeArticle"
+                  *ngFor="let article of homeResults; trackBy: trackByHomeArticle"
                   class="home-results__item"
                 >
                   <app-article-card

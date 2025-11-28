@@ -17,6 +17,7 @@ const logRequest = (req, label) => {
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 40;
+const PUBLIC_PREVIEW_LIMIT = 3;
 
 const getAllItems = async (req = request, res = response) => {
     logRequest(req, 'getAllItems');
@@ -231,13 +232,8 @@ const updateItem = async (req = request, res = response) => {
 const searchItems = async (req = request, res = response) => {
     const payload = req.body || {};
     logRequest(req, 'searchItems');
-    const keywords = Array.isArray(payload.keywords) ? payload.keywords : [];
-    const text = typeof payload.text === "string" ? payload.text : "";
+    const { terms } = buildSearchTerms(payload);
     const limit = parseLimit(payload.limit);
-
-    const keywordTokens = tokenizeArray(keywords);
-    const textTokens = tokenizeText(text);
-    const terms = Array.from(new Set([...keywordTokens, ...textTokens]));
 
     if (terms.length === 0) {
         return res.status(400).json({
@@ -246,26 +242,44 @@ const searchItems = async (req = request, res = response) => {
     }
 
     try {
-        const articles = await item.find({}).lean();
-        const scored = articles
-            .map((article) => {
-                const haystack = collectKeywords(article);
-                const matchCount = terms.reduce((count, term) => {
-                    return haystack.some((field) => field.includes(term)) ? count + 1 : count;
-                }, 0);
-                return { article, matchCount };
-            })
-            .filter(({ matchCount }) => matchCount > 0)
-            .sort((a, b) => b.matchCount - a.matchCount)
-            .slice(0, limit)
-            .map(({ article, matchCount }) => toResult(article, matchCount));
-
-        console.log(`[searchItems] returning ${scored.length} results (limit=${limit})`);
-        res.status(200).json(scored);
+        const results = await runScoredSearch(terms);
+        const limited = results.slice(0, limit);
+        console.log(`[searchItems] returning ${limited.length} results (limit=${limit})`);
+        res.status(200).json(limited);
     } catch (error) {
         console.log('[searchItems] Error', error && error.stack ? error.stack : error);
         res.status(500).json({
             msg: "Error searching items"
+        });
+    }
+};
+
+const searchItemsPreview = async (req = request, res = response) => {
+    const payload = req.body || {};
+    logRequest(req, 'searchItemsPreview');
+    const { terms } = buildSearchTerms(payload);
+
+    if (terms.length === 0) {
+        return res.status(400).json({
+            msg: "Provide at least one keyword or text term to search"
+        });
+    }
+
+    try {
+        const results = await runScoredSearch(terms);
+        const preview = results.slice(0, PUBLIC_PREVIEW_LIMIT);
+        const lockedCount = Math.max(results.length - preview.length, 0);
+        console.log(`[searchItemsPreview] returning ${preview.length} preview results (locked=${lockedCount})`);
+        res.status(200).json({
+            results: preview,
+            totalMatches: results.length,
+            lockedCount,
+            previewLimit: PUBLIC_PREVIEW_LIMIT
+        });
+    } catch (error) {
+        console.log('[searchItemsPreview] Error', error && error.stack ? error.stack : error);
+        res.status(500).json({
+            msg: "Error searching items (preview)"
         });
     }
 };
@@ -327,6 +341,30 @@ const tokenizeText = (text = "") => {
         return [];
     }
     return tokenizeArray([text]);
+};
+
+const buildSearchTerms = (payload = {}) => {
+    const keywords = Array.isArray(payload.keywords) ? payload.keywords : [];
+    const text = typeof payload.text === "string" ? payload.text : "";
+    const keywordTokens = tokenizeArray(keywords);
+    const textTokens = tokenizeText(text);
+    const terms = Array.from(new Set([...keywordTokens, ...textTokens]));
+    return { terms };
+};
+
+const runScoredSearch = async (terms = []) => {
+    const articles = await item.find({}).lean();
+    return articles
+        .map((article) => {
+            const haystack = collectKeywords(article);
+            const matchCount = terms.reduce((count, term) => {
+                return haystack.some((field) => field.includes(term)) ? count + 1 : count;
+            }, 0);
+            return { article, matchCount };
+        })
+        .filter(({ matchCount }) => matchCount > 0)
+        .sort((a, b) => b.matchCount - a.matchCount)
+        .map(({ article, matchCount }) => toResult(article, matchCount));
 };
 
 const safeArray = (value) => {
@@ -391,5 +429,6 @@ module.exports = {
     createItem,
     updateItem,
     deleteItem,
-    searchItems
+    searchItems,
+    searchItemsPreview
 };

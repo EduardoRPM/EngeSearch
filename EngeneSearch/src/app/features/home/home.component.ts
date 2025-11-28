@@ -122,12 +122,12 @@ export class HomeComponent implements OnInit {
     this.hasPerformedSearch = false;
 
     try {
-      const results = await this.searchService.search({
+      const response = await this.searchService.searchPreview({
         text: prompt,
         keywords: this.homeSelectedKeywords,
       });
-      this.homeResults = results.map((article) => this.mapToHomeArticle(article));
-      this.homeLockedCount = Math.max(results.length - 3, 0);
+      this.homeResults = response.results.map((article) => this.mapToHomeArticle(article));
+      this.homeLockedCount = response.lockedCount;
       this.hasPerformedSearch = true;
     } catch (error) {
       console.error('Home search error', error);
