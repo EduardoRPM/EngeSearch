@@ -1,9 +1,11 @@
 <div
   [ngClass]="[
     'bg-card rounded-xl overflow-hidden border transition-shadow',
-    isBookmarked ? 'border-yellow-400 shadow-lg' : 'border-border hover:shadow-lg'
+    isBookmarked ? 'border-yellow-400 shadow-lg' : 'border-border hover:shadow-lg',
+    article.link ? 'cursor-pointer' : ''
   ]"
   class="w-full h-full"
+  (click)="handleCardClick()"
 >
   <ng-container [ngSwitch]="viewMode">
     <ng-container *ngSwitchCase="'list'">
@@ -20,7 +22,7 @@
             class="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
             [ngClass]="isBookmarked ? 'bg-yellow-300 text-yellow-900 hover:bg-yellow-400' : 'bg-[#384CBF] text-white hover:bg-[#384CBF]/90'"
             [disabled]="disableBookmark"
-            (click)="handleBookmark()"
+            (click)="$event.stopPropagation(); handleBookmark()"
             aria-label="Toggle bookmark"
           >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -60,7 +62,8 @@
               <button
                 type="button"
                 class="px-3 py-1 bg-[#E8E6FF] text-[#3D4676] text-xs rounded-full transition hover:bg-[#cfd1ff]"
-                (click)="handleTagClick(tag)"
+                (click)="$event.stopPropagation(); handleTagClick(tag)"
+                (click)="$event.stopPropagation()"
               >
                 {{ tag }}
               </button>
@@ -114,7 +117,7 @@
                 type="button"
                 class="text-foreground transition-colors"
                 [ngClass]="open.observed ? 'hover:text-primary' : 'cursor-not-allowed opacity-40'"
-                (click)="open.observed ? handleOpen() : null"
+                (click)="$event.stopPropagation(); open.observed ? handleOpen() : null"
                 [disabled]="!open.observed"
                 aria-label="Ver detalles del artículo"
               >
@@ -142,7 +145,7 @@
           class="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
           [ngClass]="isBookmarked ? 'bg-yellow-300 text-yellow-900 hover:bg-yellow-400' : 'bg-[#384CBF] text-white hover:bg-[#384CBF]/90'"
           [disabled]="disableBookmark"
-          (click)="handleBookmark()"
+          (click)="$event.stopPropagation(); handleBookmark()"
           aria-label="Toggle bookmark"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -182,7 +185,8 @@
             <button
               type="button"
               class="px-3 py-1 bg-[#E8E6FF] text-[#3D4676] text-xs rounded-full transition hover:bg-[#cfd1ff]"
-              (click)="handleTagClick(tag)"
+              (click)="$event.stopPropagation(); handleTagClick(tag)"
+              (click)="$event.stopPropagation()"
             >
               {{ tag }}
             </button>
@@ -236,7 +240,7 @@
               type="button"
               class="text-foreground transition-colors"
               [ngClass]="open.observed ? 'hover:text-primary' : 'cursor-not-allowed opacity-40'"
-              (click)="open.observed ? handleOpen() : null"
+              (click)="$event.stopPropagation(); open.observed ? handleOpen() : null"
               [disabled]="!open.observed"
               aria-label="Ver detalles del artículo"
             >

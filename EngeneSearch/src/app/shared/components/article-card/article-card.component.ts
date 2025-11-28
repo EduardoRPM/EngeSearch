@@ -37,6 +37,14 @@ export class ArticleCardComponent {
 
   readonly fallbackImage = '/assets/logo.png';
 
+  handleCardClick(): void {
+    if (this.article?.link) {
+      window.open(this.article.link, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    this.handleOpen();
+  }
+
   handleBookmark(): void {
     if (this.disableBookmark) {
       return;
