@@ -60,10 +60,15 @@ export class ArticleChatModalComponent {
     this.isLoading = true;
 
     try {
+      const articleDetails = this.buildArticleDetails(trimmedQuestion);
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: trimmedQuestion, articleTitle: this.article?.title }),
+        body: JSON.stringify({
+          prompt: trimmedQuestion,
+          articleTitle: this.article?.title,
+          articleDetails,
+        }),
       });
 
       let botText: string;
@@ -145,5 +150,86 @@ export class ArticleChatModalComponent {
       console.error('Cannot serialize bot response', error);
       return String(payload);
     }
+  }
+
+  private buildArticleDetails(question: string): string {
+    const article = this.article;
+    const citations = article?.citations;
+    const formatted = article?.formatted_citations;
+
+    const textSections = [
+      'Pregunta del usuario:',
+      question || 'No disponible',
+      '',
+      'Artículo',
+      `Título: ${this.formatSimpleValue(article?.title)}`,
+      `PMCID: ${this.formatSimpleValue(article?.pmcid)}`,
+      `PMID: ${this.formatSimpleValue(article?.pmid)}`,
+      `DOI: ${this.formatSimpleValue(article?.doi)}`,
+      '',
+      'Resumen / Abstract',
+      this.formatParagraphValue(article?.abstract),
+      '',
+      'Resultados',
+      this.formatParagraphValue(article?.results),
+      '',
+      'Conclusiones',
+      this.formatParagraphValue(article?.conclusions),
+      '',
+      `Fuente: ${this.formatSimpleValue(article?.source)}`,
+      `Título en PubMed: ${this.formatSimpleValue(article?.title_pubmed)}`,
+      `Revista: ${this.formatSimpleValue(article?.journal)}`,
+      `Año: ${this.formatSimpleValue(article?.year)}`,
+      `Autores: ${this.formatListValue(article?.authors)}`,
+      '',
+      `Enlace: ${this.formatSimpleValue(article?.link)}`,
+      '',
+      'Citas',
+      `Total: ${this.formatNumberValue(citations?.citation_count)}`,
+      `Citaciones influyentes: ${this.formatNumberValue(citations?.influential_citation_count)}`,
+      `Última actualización: ${this.formatSimpleValue(citations?.last_updated)}`,
+      `Fuente: ${this.formatSimpleValue(citations?.source)}`,
+      '',
+      'Formatos de cita',
+      `APA: ${this.formatSimpleValue(formatted?.apa)}`,
+      `BibTeX: ${this.formatSimpleValue(formatted?.bibtex)}`,
+      `PubMed: ${this.formatSimpleValue(formatted?.pubmed)}`,
+    ];
+
+    return textSections.join('\n');
+  }
+
+  private formatSimpleValue(value: string | null | undefined): string {
+    if (value == null) {
+      return 'No disponible';
+    }
+    const trimmed = String(value).trim();
+    return trimmed || 'No disponible';
+  }
+
+  private formatParagraphValue(value: string[] | string | null | undefined): string {
+    if (Array.isArray(value)) {
+      const cleaned = value.map((paragraph) => paragraph.trim()).filter(Boolean);
+      return cleaned.length ? cleaned.join('\n\n') : 'No disponible';
+    }
+    if (typeof value === 'string') {
+      return value.trim() || 'No disponible';
+    }
+    return 'No disponible';
+  }
+
+  private formatListValue(value?: string[] | null): string {
+    if (!value || !value.length) {
+      return 'No disponible';
+    }
+    const cleaned = value.map((item) => item.trim()).filter(Boolean);
+    return cleaned.length ? cleaned.join(', ') : 'No disponible';
+  }
+
+  private formatNumberValue(value?: number | null): string {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return String(value);
+    }
+    return 'No disponible';
   }
 }
